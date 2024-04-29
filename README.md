@@ -4,7 +4,7 @@
 [![Codecov](https://img.shields.io/codecov/c/github/aphp/edspdf?logo=codecov&style=flat-square)](https://codecov.io/gh/aphp/edspdf)
 [![DOI](https://zenodo.org/badge/517726737.svg)](https://zenodo.org/badge/latestdoi/517726737)
 
-# EDS-PDF
+# EDS-PDF (WIP)
 
 EDS-PDF provides a modular framework to extract text information from PDF documents.
 
