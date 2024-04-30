@@ -5,7 +5,7 @@ import pypdfium2 as pdfium
 from PIL import Image, ImageDraw
 from PIL.PpmImagePlugin import PpmImageFile
 
-from edspdf.structures import Box
+from edspdf.structures import Box, Box_lines
 
 CATEGORY20 = [
     "#1f77b4",
@@ -33,7 +33,7 @@ CATEGORY20 = [
 
 def show_annotations(
     pdf: bytes,
-    annotations: Sequence[Box],
+    annotations: Sequence[Union[Box, Box_lines]],
     colors: Optional[Union[Dict[str, str], List[str]]] = None,
 ) -> List[PpmImageFile]:
     """
@@ -79,6 +79,15 @@ def show_annotations(
                     outline=colors[bloc.label],
                     width=3,
                 )
+                # BIOUL
+                bioul = getattr(bloc, 'bioul', None)
+                if bioul is not None:
+                    if bloc == 'B':
+                        print('Bioul: B')
+                        draw.text((bloc.x0, bloc.y0), "BBB", fill=(255,0,0)) 
+                else:
+                    print('Rien')
+                        
 
     return pages
 

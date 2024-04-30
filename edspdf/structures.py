@@ -266,3 +266,36 @@ class TextBox(Box):
 
     text: str
     props: List[TextProperties] = attrs.field(factory=list)
+
+
+###
+@attrs.define(kw_only=True, hash=True)
+class Box_lines:
+    """
+    The `Box` class represents a box annotation in a PDF document. It is the base class
+    of [TextBox][edspdf.structures.TextBox].
+
+    Attributes
+    ----------
+    doc : PDFDoc
+        The PDF document that this box belongs to.
+    page_num : Optional[int]
+        The page number of the box.
+    x0 : float
+        The left x-coordinate of the box.
+    x1 : float
+        The right x-coordinate of the box.
+    y0 : float
+        The top y-coordinate of the box.
+    y1 : float
+        The bottom y-coordinate of the box.
+    label : Optional[str]
+        The label of the box.
+    page : Page
+        The page object that this box belongs to.
+    """
+
+    box: Box = None
+    lines: Optional[list[TextBox]] = None
+    text: str = None
+    bioul: str = None
