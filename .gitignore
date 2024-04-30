@@ -50,7 +50,7 @@ report.xml
 
 # IPython Notebook
 .ipynb_checkpoints
-*.ipynb
+# *.ipynb
 
 # Data
 *.csv
