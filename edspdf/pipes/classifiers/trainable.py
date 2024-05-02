@@ -99,7 +99,6 @@ class TrainableClassifier(TrainablePipe[Dict[str, Any]]):
 
         size = self.embedding.output_size
 
-        self.linear = torch.nn.Linear(size, size)
         self.classifier = torch.nn.Linear(
             in_features=self.embedding.output_size,
             out_features=len(self.label_voc),
@@ -128,13 +127,13 @@ class TrainableClassifier(TrainablePipe[Dict[str, Any]]):
         )
         old_index = [label_voc_indices[label] for label in label_voc_indices]
         new_index = [label_indices[label] for label in label_voc_indices]
-        new_linear = torch.nn.Linear(
+        new_classifier = torch.nn.Linear(
             self.embedding.output_size,
             len(label_indices),
         )
-        new_linear.weight.data[new_index] = self.linear.weight.data[old_index]
-        new_linear.bias.data[new_index] = self.linear.bias.data[old_index]
-        self.classifier = new_linear
+        new_classifier.weight.data[new_index] = self.classifier.weight.data[old_index]
+        new_classifier.bias.data[new_index] = self.classifier.bias.data[old_index]
+        self.classifier = new_classifier
 
     def preprocess(self, doc: PDFDoc) -> Dict[str, Any]:
         result = {
