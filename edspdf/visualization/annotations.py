@@ -85,8 +85,6 @@ def show_annotations(
                     if bloc == 'B':
                         print('Bioul: B')
                         draw.text((bloc.x0, bloc.y0), "BBB", fill=(255,0,0)) 
-                else:
-                    print('Rien')
                         
 
     return pages
