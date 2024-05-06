@@ -1,0 +1,488 @@
+    1  git clone https://gitlab.eds.aphp.fr/ID/pfm/infrastructure/support/create-user.git
+    2  cd create-user/
+    3  ls
+    4  cd check-jupyter/
+    5  ./JupyterChekWrapper.sh 
+    6  cd ..
+    7  ls
+    8  cd ..
+    9  ls
+   10  cd .local/share/
+   11  ls
+   12  cd jupyter/
+   13  ls
+   14  cd kernels/
+   15  ls
+   16  cd ..
+   17  kernels.bck
+   18  mkdir kernels.bck
+   19  cd kernels
+   20  ls
+   21  mv pyspark-3.0.1* ../kernels.bck/
+   22  mv sparkr-2.4.3-local/ ../kernels.bck/
+   23  mv R_3.4/ ../kernels.bck/
+   24  ssh-keygen -t ed25519
+   25  cat .ssh/id_ed25519.pub 
+   26  df -h
+   27  git clone ssh://git@gitlab.eds.aphp.fr:2224/ID/pfm/bigdata/medical-documents/edspdf-train.git
+   28  ls
+   29  ls /export/home/share/datascientists/
+   30  vi ~/s3cfg
+   31  cd edspdf-train/
+   32  #s3cmd ls -c ~/s3cfg s3://datalake-annotated-datasets-docs/edspdf/0.2.0/data/
+   33  ls
+   34  cd data
+   35  s3cmd ls -c ~/s3cfg s3://datalake-annotated-datasets-docs/edspdf/0.2.0/data/
+   36  conda install s3cmd
+   37  pip install pipx --user
+   38  hdfs
+   39  pipx install s3cmd
+   40  s3cmd ls -c ~/s3cfg s3://datalake-annotated-datasets-docs/edspdf/0.2.0/data/
+   41  s3cmd sync -c ~/s3cfg s3://datalake-annotated-datasets-docs/edspdf/0.2.0/data/ .
+   42  s3cmd sync -c ~/s3cfg s3://datalake-annotated-datasets-docs/edspdf/0.2.0/data/dataset dataset/
+   43  mv dataset/dataset/* dataset
+   44  rmdir dataset/dataset/
+   45  cd ..
+   46  python -m venv .venv
+   47  source .venv/bin/activate
+   48  python --version
+   49  rm -rf .venv/
+   50  conda create -n py39 python=3.9
+   51  conda activate py39
+   52  python -m venv .venv
+   53  source .venv/bin/activate
+   54  pip install ipykernel
+   55  which python
+   56  python -m ipykernel install --user --name edspdf-train
+   57  rm -rf data/dataset/train/.ipynb_checkpoints/
+   58  ls /export/home/smbaye/edspdf-train/.venv/lib/python3.9/site-packages/
+   59  pip install -e .
+   60  pip install edspdf-extractor-aphp --index-url https://__token__:<your_personal_token>@gitlab.eds.aphp.fr/api/v4/projects/1489/packages/pypi/simple
+   61  vi ~/.pypirc
+   62  pip install edspdf-extractor-aphp
+   63  pip install edspdf-extractor-aphp --index-url https://gitlab.eds.aphp.fr/api/v4/projects/1489/packages/pypi/simple
+   64  vi ~/.pypirc
+   65  cd ..
+   66  source .venv/bin/activate
+   67  pip install edspdf-extractor-aphp --index-url https://jupyterhub:YmYpUyRxp_56MtnyTDxx@gitlab.eds.aphp.fr/api/v4/projects/1489/packages/pypi/simple
+   68  pip install edspdf-extractor-aphp
+   69  pip install edspdf-extractor-aphp --index-url https://jupyterhub:YmYpUyRxp_56MtnyTDxx@gitlab.eds.aphp.fr/api/v4/projects/1489/packages/pypi/simple
+   70  python --version
+   71  pip install edspdf-extractor-aphp --index-url https://__token__:YmYpUyRxp_56MtnyTDxx@gitlab.eds.aphp.fr/api/v4/projects/1489/packages/pypi/simple
+   72  wget https://__token__:YmYpUyRxp_56MtnyTDxx@gitlab.eds.aphp.fr/api/v4/projects/1489/packages/pypi/simple
+   73  wget https://__token__:YmYpUyRxp_56MtnyTDxx@gitlab.eds.aphp.fr/api/v4/projects/1489/packages/pypi/simple
+   74  vi ~/.pypirc
+   75  pip install edspdf-extractor-aphp --index-url https://__token__:YmYpUyRxp_56MtnyTDxx@gitlab.eds.aphp.fr/api/v4/projects/1489/packages/pypi/simple
+   76  vi ~/.pypirc 
+   77  pip install edspdf-extractor-aphp --index-url https://__token__:YmYpUyRxp_56MtnyTDxx@gitlab.eds.aphp.fr/api/v4/projects/1489/packages/pypi/simple
+   78  pip install edspdf-extractor-aphp
+   79  vi ~/.netrc
+   80  pip install edspdf-extractor-aphp
+   81  pip install edspdf-extractor-aphp --index-url https://__token__:YmYpUyRxp_56MtnyTDxx@gitlab.eds.aphp.fr/api/v4/projects/1489/packages/pypi/simple
+   82  pip install Pillow
+   83  pip uninstall edspdf-extractor-aphp
+   84  pip install edspdf -U
+   85  python scripts/train.py --config configs/config.cfg 
+   86  pip install transformers
+   87  python scripts/train.py --config configs/config.cfg 
+   88  python scripts/train.py --config configs/config.cfg 
+   89  python scripts/train.py --config configs/config.cfg 
+   90  mkdir logs
+   91  sbatch train-slurm.sh 
+   92  sacctmgr
+   93  sinfo
+   94  sbatch train-slurm.sh 
+   95  sbatch train-slurm.sh 
+   96  cd data/publaynet/
+   97  unzip
+   98  conda install unzip
+   99  unzip xmls.zip 
+  100  rm xmls.zip 
+  101  ls
+  102  ls
+  103  rm __MACOSX/
+  104  rm -rf __MACOSX/
+  105  ls -l
+  106  rm .ipynb_checkpoints/
+  107  rm -rf .ipynb_checkpoints/
+  108  ls -l
+  109  ls .empty/
+  110  #sbatch train-slurm.sh 
+  111  cd ../..
+  112  sbatch train-slurm.sh 
+  113  pip ins
+  114  python scripts/train.py 
+  115  pip download edspdf-extractor-aphp --index-url https://__token__:YmYpUyRxp_56MtnyTDxx@gitlab.eds.aphp.fr/api/v4/projects/1489/packages/pypi/simple
+  116  pip download edspdf-extractor-aphp --index-url https://__token__:YmYpUyRxp_56MtnyTDxx@gitlab.eds.aphp.fr/api/v4/projects/1489/packages/pypi/simple --no-deps
+  117  unzip edspdf_extractor_aphp-0.2.0-py3-none-any.whl 
+  118  pwd
+  119  ls
+  120  cd edspdf-train/
+  121  ls
+  122  ls -l
+  123  ls -r
+  124  ls
+  125  l
+  126  ls
+  127  cd 
+  128  ls
+  129  vi sbatch.sh
+  130  sbatch sbatch.sh 
+  131  squeue
+  132  scontrol show job 20674
+  133  vi sbatch.sh
+  134  sbatch sbatch.sh 
+  135  squeue
+  136  ls -lart
+  137  cat slurm-20675.out
+  138  squeue
+  139  scancel 20674
+  140  squeue
+  141  pwd
+  142  ls /bin/bash
+  143  pwd
+  144  ls
+  145  git clone https://github.com/aphp/edspdf.git
+  146  ls edspdf
+  147  ls edspdf -l
+  148  pwd
+  149  ls
+  150  ls edspdf
+  151  rm -rf edspdf
+  152  pwd
+  153  cd edspdf-train/
+  154  ls
+  155  git clone https://github.com/souleymane-mbaye/edspdf.git
+  156  mv notebooks/ edspdf
+  157  cd edspdf
+  158  ls
+  159  ls notebooks/
+  160  pwd
+  161  ls
+  162  git add .
+  163  git push
+  164  git push
+  165  vi ~/.netrc
+  166  git remote get-url origin
+  167  cd ..
+  168  mv edspdf ..
+  169  cd ../../edspdf
+  170  cd ../edspdf
+  171  ls -lah
+  172  git remote get-url origin
+  173  git log
+  174  git log -n 1
+  175  git status
+  176  git add README.md 
+  177  git commit -m "chore: update readme (wip)"
+  178  git config --global user.email souleymane.mbayeg@gmail.com
+  179  git config --global user.name "Souleymane Mbaye"
+  180  git commit -m "chore: update readme (wip)"
+  181  git push
+  182  2RR0;276;0c10;rgb:0000/0000/000011;rgb:ffff/ffff/ffff2RR0;276;0c10;rgb:0000/0000/000011;rgb:ffff/ffff/ffff2RR0;276;0c10;rgb:0000/0000/000011;rgb:ffff/ffff/ffff2RR0;276;0c10;rgb:0000/0000/000011;rgb:ffff/ffff/ffff2RR0;276;0c10;rgb:0000/0000/000011;rgb:ffff/ffff/ffff2RR0;276;0c10;rgb:0000/0000/000011;rgb:ffff/ffff/ffff2RR0;276;0c10;rgb:0000/0000/000011;rgb:ffff/ffff/ffff2RR0;276;0c10;rgb:0000/0000/000011;rgb:ffff/ffff/ffff2RR0;276;0c10;rgb:0000/0000/000011;rgb:ffff/ffff/ffff2RR0;276;0c10;rgb:0000/0000/000011;rgb:ffff/ffff/ffff2RR0;276;0c10;rgb:0000/0000/000011;rgb:ffff/ffff/ffff2RR0;276;0c10;rgb:0000/0000/000011;rgb:ffff/ffff/ffff
+  183  pip list
+  184  ls
+  185  pip install -e .
+  186  pip list
+  187  ls
+  188  cd edspd*
+  189  cd ..
+  190  ls edsp*
+  191  pwd
+  192  cd ..
+  193  cd edspdf-train/
+  194  source .venv
+  195  source .venv/activate/bin
+  196  source .venv/bin/activate
+  197  cd ../edspdf
+  198  pip install -e .
+  199  pip list
+  200  pwd
+  201  ls e
+  202  vi ~/.bashrc 
+  203  python
+  204  source
+  205  source .venv/bin/activate
+  206  pip install pandas
+  207  ls .venv/
+  208  ls .venv/bin/
+  209  ls .venv/bin/activate
+  210  vi .venv/bin/activate
+  211  pwd
+  212  cd ..
+  213  cd edspdf
+  214  git push
+  215  ls
+  216  git add .
+  217  git commit -m 'add noteooks'
+  218  git push
+  219  git add notebooks
+  220  git status
+  221  git add .
+  222  ls
+  223  vi .gitignore 
+  224  git status
+  225  git add notebooks/*
+  226  vi .gitignore 
+  227  git add notebooks/*
+  228  git status
+  229  git add .
+  230  git commit -m 'add notebooks'
+  231  git push
+  232  pwd
+  233  git pull
+  234  ls -l
+  235  ls -l
+  236  ls -l
+  237  ls -l
+  238  dvc exp show
+  239  cd ../edspdf-train/
+  240  dvc exp show
+  241  PAGER=less dvc exp show
+  242  vi ~/.bashrc 
+  243  export PAGER=less
+  244  sinfo
+  245  sbatch sbatch.sh 
+  246  tail -f -n +1 slurm-20675.out 
+  247  cd edspdf-train
+  248  conda activate py39
+  249  conda deactivate
+  250  source .venv/bin/activate
+  251  python scripts/train.py --config configs/config.cfg 
+  252  sbatch sbatch.sh 
+  253  sbatch train-slurm.sh 
+  254  tail -f -n +1 logs/slurm-20723-std*
+  255  tail -f -n +1 logs/slurm-20723-std*
+  256  sbatch train-slurm.sh 
+  257  tail -f -n +1 logs/slurm-20724-std*
+  258  pipx install dvc
+  259  dvc exp run
+  260  2022.11.0
+  261  which pipx
+  262  /export/home/smbaye/.local/bin/pipx --version
+  263  deactivate && conda deactivate
+  264  pipx
+  265  conda activate py39
+  266  pip install pipx --user
+  267  which pipx
+  268  conda deactivate && conda activate
+  269  conda dea
+  270  conda deactivate && conda activate py39
+  271  which pipx
+  272  pip install pipx --user
+  273  pip uninstall pipx
+  274  pip install pipx --user
+  275  whi c
+  276  which pipx
+  277  conda deac
+  278  pipx install dvc
+  279  which dvc
+  280  head /export/home/smbaye/.local/bin/dvc
+  281  which /export/home/smbaye/.local/pipx/venvs/dvc/bin/python
+  282  /export/home/smbaye/.local/pipx/venvs/dvc/bin/python --version
+  283  conda deactivate
+  284  source .venv/bin/activate
+  285  dvc exp run
+  286  dvc init
+  287  vi .gitignore 
+  288  dvc init
+  289  ls .dvc
+  290  git status
+  291  vi .gitignore 
+  292  git status
+  293  ls -lah .dvc/config
+  294  less .dvc/config
+  295  less .dvc/.gitignore 
+  296  less .dvc/.gitignore 
+  297  git status
+  298  git reset
+  299  git status
+  300  vi .gitignore 
+  301  dvc exp run
+  302  dvc exp run
+  303  sbatch train-slurm.sh 
+  304  tail -f -n +1 logs/slurm-20725-std*
+  305  squeue
+  306  scancel -u $USER
+  307  scancel 20725
+  308  sbatch train-slurm.sh 
+  309  tail -f -n +1 logs/slurm-20726-std*
+  310  diff configs/config.cfg  configs/config.layoutlm-txt.cfg 
+  311  tail -f -n +1 logs/slurm-20726-std*
+  312  wich pandas
+  313  wich pipx
+  314  pipx --version
+  315  pandas --version
+  316  import pan
+  317  python
+  318  pipx intall pandas
+  319  pipx install pandas
+  320  pipx install numpy
+  321  pipx install pandas
+  322  pipx install pandas --include-deps
+  323  sbatch train-slurm.sh 
+  324  tail -f -n +1 logs/slurm-20727-std*
+  325  squeue
+  326  sbatch train-slurm.sh 
+  327  tail -f -n +1 logs/slurm-20727-std*
+  328  tail -f -n +1 logs/slurm-20728-std*
+  329  history
+  330  pwd
+  331  ls
+  332  ls -lf
+  333  cd edspdf-train/
+  334  ls -l
+  335  source .venv/bin/activate
+  336  sbatch train-slurm.sh 
+  337  tail -f -n +1 logs/slurm-20765-std*
+  338  sbatch train-slurm.sh 
+  339  ls
+  340  cd ../data/
+  341  ls
+  342  cd publaynet/
+  343  mkdir train test
+  344  ls
+  345  pwd
+  346  cd ../../..
+  347  cd edspdf
+  348  ls
+  349  git pull
+  350  ./push-script.sh 
+  351  watch -n2 nvidia-smi
+  352  exit
+  353  cd
+  354  sbatch train-slurm.sh 
+  355  pwd
+  356  ls
+  357  cd edspdf-train/
+  358  sbatch train-slurm.sh 
+  359  tail -f -n +1 logs/slurm-20830-std*
+  360  squeue
+  361  scancel -u $USER
+  362  squeue
+  363  sbatch train-slurm.sh 
+  364  tail -f -n +1 logs/slurm-20831-std*
+  365  tail -f -n +1 logs/slurm-20831-std*
+  366  cd data
+  367  ls
+  368  cd ../data/
+  369  ls
+  370  cd publaynet/
+  371  ls
+  372  cd xmls/
+  373  clear
+  374  ls *7888
+  375  squeue
+  376  ssh bbs-edsg28-p007
+  377  vi ~/.ssh/id_ed25519.pub
+  378  vi ~/.ssh/authorized_keys
+  379  ssh bbs-edsg28-p007
+  380  vi ~/.ssh/authorized_keys
+  381  ssh bbs-edsg28-p007
+  382  chmod 777 ~/.ssh/authorized_keys
+  383  ssh bbs-edsg28-p007
+  384  ls -lah ~/.ssh/authorized_keys 
+  385  chmod 600 ~/.ssh/authorized_keys
+  386  ssh bbs-edsg28-p007
+  387  cd ..
+  388  cd ../edspdf
+  389  ls p*
+  390  ./push-script.sh 
+  391  git pull
+  392  cd ../edspdf-train/configs/
+  393  python3 config-bioul-pln.cfg 
+  394  cd ../edspdf_model/
+  395  ls
+  396  python3 dataset.py 
+  397  cd ../../edspdf
+  398  ./push-script.sh 
+  399  git pull
+  400  sbatch train-slurm.sh 
+  401  cd ../edspdf-train/
+  402  sbatch train-slurm.sh 
+  403  tail -f -n +1 logs/slurm-20788-std*
+  404  scancel $USER
+  405  scancel -n $USER
+  406  sbatch train-slurm.sh 
+  407  tail -f -n +1 logs/slurm-20789-std*
+  408  scancel -n $USER
+  409  sbatch train-slurm.sh 
+  410  tail -f -n +1 logs/slurm-20790-std*
+  411  scancel -n $USER
+  412  sbatch train-slurm.sh 
+  413  tail -f -n +1 logs/slurm-20791-std*
+  414  scancel -n $USER
+  415  sbatch train-slurm.sh 
+  416  tail -f -n +1 logs/slurm-20793-std*
+  417  scancel -n $USER
+  418  sbatch train-slurm.sh 
+  419  tail -f -n +1 logs/slurm-20795-std*
+  420  scancel -n $USER
+  421  sbatch train-slurm.sh 
+  422  tail -f -n +1 logs/slurm-20796-std*
+  423  sbatch train-slurm.sh 
+  424  tail -f -n +1 logs/slurm-20798-std*
+  425  scancel -n $USER
+  426  sbatch train-slurm.sh 
+  427  tail -f -n +1 logs/slurm-20800-std*
+  428  sbatch train-slurm.sh 
+  429  tail -f -n +1 logs/slurm-20801-std*
+  430  source .venv/bin/activate
+  431  python scripts/train.py --config configs/config_bioul_pln.cfg
+  432  python scripts/train.py --config configs/config_bioul_pln.cfg
+  433  python scripts/train.py --config configs/config_bioul_pln.cfg
+  434  python scripts/train.py --config configs/config_bioul_pln.cfg
+  435  python scripts/train.py --config configs/config_bioul_pln.cfg
+  436  python scripts/train.py --config configs/config_bioul_pln.cfg
+  437  python scripts/train.py --config configs/config_bioul_pln.cfg
+  438  python scripts/train.py --config configs/config_bioul_pln.cfg
+  439  python scripts/train.py --config configs/config_bioul_pln.cfg
+  440  python scripts/train.py --config configs/config_bioul_pln.cfg
+  441  sbatch train-slurm.sh 
+  442  tail -f -n +1 logs/slurm-20821-std*
+  443  sbatch train-slurm.sh 
+  444  tail -f -n +1 logs/slurm-20823-std*
+  445  sbatch train-slurm.sh 
+  446  tail -f -n +1 logs/slurm-20824-std*
+  447  scancel
+  448  scancel -n $USER
+  449  sbatch train-slurm.sh 
+  450  tail -f -n +1 logs/slurm-20825-std*
+  451  sbatch train-slurm.sh 
+  452  scancel -n $USER
+  453  sbatch train-slurm.sh 
+  454  tail -f -n +1 logs/slurm-20827-sd*
+  455  tail -f -n +1 logs/slurm-20827-std*
+  456  scancel -n $USER
+  457  sbatch train-slurm.sh 
+  458  tail -f -n +1 logs/slurm-20828-std*
+  459  tail -f -n +1 logs/slurm-20828-std*
+  460  scancel -n $USER
+  461  sbatch train-slurm.sh 
+  462  tail -f -n +1 logs/slurm-20829-std*
+  463  pwd
+  464  ls ../../edspdf-train/data/publaynet/xmls_10
+  465  ls ../../edspdf-train/data/publaynet/xmls_10 | wc
+  466  rm -rf ../../edspdf-train/data/publaynet/xmls_10/*
+  467  rm -rf ../../edspdf-train/data/publaynet/xmls_10/*
+  468  rm -rf ../../edspdf-train/data/publaynet/train/*
+  469  rm -rf ../../edspdf-train/data/publaynet/test/*
+  470  rm -rf ../../edspdf-train/data/publaynet/test/*
+  471  rm -rf ../../edspdf-train/data/publaynet/train/*
+  472  rm -rf ../../edspdf-train/data/publaynet/train/*
+  473  rm -rf ../../edspdf-train/data/publaynet/test/*
+  474  rm -rf ../../edspdf-train/data/publaynet/test/*
+  475  rm -rf ../../edspdf-train/data/publaynet/train/*
+  476  rm -rf ../../edspdf-train/data/publaynet/xmls_10/*
+  477  ls ../../edspdf-train/data/publaynet/
+  478  ls ../../edspdf-train/data/publaynet/train/ | wc
+  479  ls
+  480  ls
+  481  rm -rf ../../edspdf-train/data/publaynet/train/*
+  482  rm -rf ../../edspdf-train/data/publaynet/test/*
+  483  rm -rf ../../edspdf-train/data/publaynet/test/*
+  484  rm -rf ../../edspdf-train/data/publaynet/train/*
+  485  ls
+  486  clear
+  487  history
+  488  history > 'history.txt'
