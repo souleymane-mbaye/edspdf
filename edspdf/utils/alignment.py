@@ -181,12 +181,23 @@ def _align_box_labels_bioul_on_page(
     for box_lines in boxes_lines:
         nb_lines = len(box_lines.lines)
         if nb_lines > 1:
-            box_lines.lines[0].label = 'B' # Beggin
+            box_lines.lines[0].label = 'B' # Begin
+            box_lines.lines[0].is_begin = True
+            box_lines.lines[0].is_last = False
+            
             box_lines.lines[-1].label = 'L' # Last
+            box_lines.lines[-1].is_begin = False
+            box_lines.lines[-1].is_last = True
+            
             for li in box_lines.lines[1:-1]:
                 li.label = 'I'
+                li.is_begin = False
+                li.is_last = False
         elif nb_lines == 1:
             box_lines.lines[0].label = 'U' # Unit
+            box_lines.lines[0].is_begin = True
+            box_lines.lines[0].is_last = True
+            
     
     text_boxes = [tb for tb in box_lines.lines for lines in boxes_lines]
     return text_boxes
