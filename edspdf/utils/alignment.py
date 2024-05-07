@@ -197,9 +197,12 @@ def _align_box_labels_bioul_on_page(
             box_lines.lines[0].label = 'U' # Unit
             box_lines.lines[0].is_begin = True
             box_lines.lines[0].is_last = True
-            
     
-    text_boxes = [tb for tb in box_lines.lines for lines in boxes_lines]
+    text_boxes = [
+        tb
+        for tb in box_lines.lines
+        for box_lines in boxes_lines
+    ]
     return text_boxes
 
 

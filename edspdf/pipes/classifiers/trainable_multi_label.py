@@ -16,7 +16,7 @@ from edspdf.structures import PDFDoc
 from edspdf.trainable_pipe import TrainablePipe
 
 
-@registry.factory.register("trainable-classifier")
+@registry.factory.register("bl-trainable-classifier")
 class TrainableClassifier(TrainablePipe[Dict[str, Any]]):
     """
     This component predicts a label for each box over the whole document using machine
@@ -101,7 +101,11 @@ class TrainableClassifier(TrainablePipe[Dict[str, Any]]):
 
         self.classifier = torch.nn.Linear(
             in_features=self.embedding.output_size,
-            out_features=len(self.label_voc),
+            
+            
+            
+            # out_features=len(self.label_voc),
+            out_features=2, # is_begin, is_last
         )
 
     def post_init(self, gold_data: Iterable[PDFDoc], exclude: set):
@@ -153,6 +157,7 @@ class TrainableClassifier(TrainablePipe[Dict[str, Any]]):
     
     
     #########
+    #########
     def preprocess_supervised(self, doc: PDFDoc) -> Dict[str, Any]:
         return {
             **self.preprocess(doc),
@@ -161,7 +166,7 @@ class TrainableClassifier(TrainablePipe[Dict[str, Any]]):
                     #self.label_voc.encode(b.label) if b.label is not None else -100
                     [
                         1.0 if b.label in ("B", "U") else 0.0,  # is at the beginning 
-                        1.0 if b.label in ("L", "U") else 0.0,  # is at the end 
+                        1.0 if b.label in ("L", "U") else 0.0,  # is at the end (last)
                     ]
                     for b in page.text_boxes
                 ]
@@ -201,17 +206,29 @@ class TrainableClassifier(TrainablePipe[Dict[str, Any]]):
         if "labels" in batch:
             targets = batch["labels"].refold(logits.data_dims)
             output["label_loss"] = (
-                F.cross_entropy(
-                    logits,
+                # sig + BCELoss
+                F.binary_cross_entropy(
+                    F.sigmoid(logits),
                     targets,
                     reduction="sum",
                 )
                 / targets.mask.sum()
+                
+                # F.cross_entropy(
+                #     logits,
+                #     targets,
+                #     reduction="sum",
+                # )
+                # / targets.mask.sum()
             )
             output["loss"] = output["loss"] + output["label_loss"]
         else:
             output["logits"] = logits
-            output["labels"] = logits.argmax(-1)
+            
+            
+            # output["labels"] = logits.argmax(-1)
+            output["labels"] = logits > 0.5
+            
 
         return output
 
@@ -220,7 +237,11 @@ class TrainableClassifier(TrainablePipe[Dict[str, Any]]):
             (b for doc in docs for b in doc.text_boxes),
             output["labels"].tolist(),
         ):
-            b.label = self.label_voc.decode(label) if b.text != "" else None
+            
+            # b.label = self.label_voc.decode(label) if b.text != "" else None
+            b.label = 'U' if sum(label) == 2 else \
+                        ('B' if label[0] is True else \
+                        ('L' if label[1] is True else 'I'))
         return docs
 
     def to_disk(self, path: Path, exclude: Set):
