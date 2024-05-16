@@ -2,7 +2,7 @@ from typing import Dict, List, Optional, Sequence, Union
 
 import numpy as np
 import pypdfium2 as pdfium
-from PIL import Image, ImageDraw
+from PIL import Image, ImageFont, ImageDraw
 from PIL.PpmImagePlugin import PpmImageFile
 
 from edspdf.structures import Box, Box_lines
@@ -79,12 +79,22 @@ def show_annotations(
                     outline=colors[bloc.label],
                     width=3,
                 )
-                # BIOUL
-                bioul = getattr(bloc, 'bioul', None)
-                if bioul is not None:
-                    if bloc == 'B':
-                        print('Bioul: B')
-                        draw.text((bloc.x0, bloc.y0), "BBB", fill=(255,0,0)) 
+                # Rank
+                rank = getattr(bloc, 'rank', None)
+                if rank is not None:
+                    # font = ImageFont.truetype('/System/Library/Fonts/Supplemental/Arial.ttf', 25)
+                    position = (-10 + bloc.x0 * w, bloc.y0 * h)
+                    text = str(rank)
+                    fill = getattr(bloc, 'color', None)
+                    fill = 'black' if fill is None else fill
+                    
+                    bg_color = getattr(bloc, 'bg_color', None)
+                    bg_color = 'white' if bg_color is None else bg_color
+                    
+                    bbox = draw.textbbox(position, text)
+                    draw.rectangle(bbox, fill=bg_color)
+                    draw.text(position, text, align='left', fill=fill)
+                
                         
 
     return pages

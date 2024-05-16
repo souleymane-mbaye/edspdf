@@ -267,9 +267,6 @@ class TextBox(Box):
     text: str
     props: List[TextProperties] = attrs.field(factory=list)
     
-    is_begin: bool = None
-    is_last: bool = None
-
 
 ###
 @attrs.define(kw_only=True, hash=True)
