@@ -75,9 +75,9 @@ def show_annotations(
         for bloc in annotations:
             if bloc.page_num == page_num:
                 draw.rectangle(
-                    [(bloc.x0 * w, bloc.y0 * h), (bloc.x1 * w, bloc.y1 * h)],
+                    [(bloc.x0 * w -2, bloc.y0 * h), (bloc.x1 * w +2, bloc.y1 * h)],
                     outline=colors[bloc.label],
-                    width=3,
+                    width=2,    # 3
                 )
                 # Rank
                 rank = getattr(bloc, 'rank', None)
