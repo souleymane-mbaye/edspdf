@@ -1,0 +1,13 @@
+
+  digraph XMLDoc {
+  idp140695157168656  [shape=oval, label="Element\n p"]
+  idp140695645230352  [shape=box, label="Text\nSewage sludge from municipal wastewater treatment is used in agriculture as a nutrient source and to aid in moisture retention. To examine the potential impact of sludge-amended soil on exposures to polychlorinated dibenzo-"];
+  idp140695157168656  -> idp140695645230352;
+  idp140695645310832  [shape=oval, label="Element\n italic"]
+  idp140695645239584  [shape=box, label="Text\np"];
+  idp140695645310832  -> idp140695645239584;
+  idp140695157168656  -> idp140695645310832;
+  idp140695645235168  [shape=box, label="Text\n-dioxins and dibenzofurans (PCDD/Fs) from plant and animal foods, we conducted a review of published empirical data from international sources. Levels of PCDD/F in municipal sewage sludge ranged from 0.0005 to 8,300 pg toxic equivalents (TEQ)/g. Background levels in soil ranged from 0.003 to 186 pg TEQ/g. In sludge-amended soils, levels of PCDD/F ranged from 1.4 to 15 pg TEQ/g. Studies that measured levels before and after sludge treatment showed an increase in soil concentration after treatment. Relationships between PCDD/F levels in soil and resulting concentrations in plants were very weakly positive for unpeeled root crops, leafy vegetables, tree fruits, hay, and herbs. Somewhat stronger relationships were observed for plants of the cucumber family. In all cases, large increases in soil concentration were required to achieve a measurable increase in plant contamination. A considerably stronger positive relationship was observed between PCDD/F in feed and resulting levels in cattle tissue, suggesting bioaccumulation. Although PCDD/Fs are excreted in milk, no association was found between feed contamination and levels of PCDD/Fs measured in milk. There is a paucity of realistic data describing the potential for entry of PCDD/Fs into the food supply via sewage sludge. Currently available data suggest that sewage sludge application to land used for most crops would not increase human exposure. However, the use of sludge on land used to graze animals appears likely to result in increased human exposure to PCDD/F."];
+  idp140695157168656  -> idp140695645235168;
+  
+  }

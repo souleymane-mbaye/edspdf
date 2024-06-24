@@ -1,0 +1,166 @@
+\documentclass{report}
+\usepackage[utf8]{inputenc}
+
+\usepackage{graphicx} % Required for inserting images
+\usepackage{caption}
+\usepackage{subcaption}
+
+\usepackage{ulem}
+\usepackage{float}
+\usepackage{multicol}
+\usepackage[a4paper, margin=2cm]{geometry}
+
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+
+
+
+\title{stage-eds-pdf}
+\author{Souleymane Mbaye}
+\date{June 2024}
+
+
+\begin{document}
+
+% Première page
+\thispagestyle{empty}
+
+% logo
+\begin{figure}[h]
+    \begin{minipage}[t]{0.2\textwidth}
+        \flushleft
+        \includegraphics[width=\textwidth]{images/sus.png}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.4\textwidth}
+        \flushright
+        \includegraphics[width=\textwidth]{images/aphp.png}
+    \end{minipage}
+\end{figure}
+
+
+% corps de la page de garde
+\begin{center}
+
+    \huge
+    \vspace{1cm}
+    \textbf{Rapport de stage de fin de Master}
+    
+    \large
+    \vspace{2cm}
+    \textbf{Sorbonne Université}
+    
+    \vspace{0.2cm}
+    Master 2 Informatique
+    
+    \vspace{1cm}
+    \uline{Parcours}: \textbf{Données, Apprentissage, Connaissances (DAC)}
+    
+    \Large
+    \vspace{2cm}
+    \uline{Sujet de stage (recherche)}: \textbf{Développement d'algorithmes avancés par Deep-Learning pour la segmentation des documents PDFs cliniques à l'AP-HP}
+    
+    \Large
+    \vspace{2cm}
+    \uline{Organisme d’accueil}: \textbf{Assistance Publique - Hôpitaux de Paris (AP-HP)}
+
+    
+    
+    \Large
+    \vspace{2cm}
+    \uline{Stagiaire}: \textbf{Souleymane Mbaye}, \textit{souleymane.mb19@gmail.com} \\
+    Tuteur de stage: Perceval Wajsbürt, \textit{perceval.wajsburt@aphp.fr} \\
+    Enseignant référent: Jean-Noël Vittaut, \textit{jean-noel.vittaut@lip6.fr}
+
+\end{center}
+
+\vspace{3cm}
+\noindent
+\begin{minipage}[t]{0.4\textwidth}
+    \flushleft
+    Année scolaire: 2023-2024
+\end{minipage}%
+\begin{minipage}[t]{0.6\textwidth}
+    \flushright
+    période de stage: Avril à Septembre 2024
+\end{minipage}
+
+
+% Table des matières
+\tableofcontents
+\newpage
+\pagenumbering{}
+
+
+\begin{multicols}{2} % Définit deux colonnes
+    \section {Introduction} 
+    Dans le cadre de mes études à Sorbonne Université incluant un stage de fin d'étude de Master impératif pour valider mon diplôme, j’ai rejoins, de avril à septembre 2024, l’équipe Data Science du Pôle Innovation et Données (I\&D) de la Direction des Services Numériques (DSN) de l’AP-HP. Cette dernière développe et valide des algorithmes de pré-traitement des données massives. Elle développe notamment les bibliothèques open-source EDS-NLP, EDS-PDF, EDS-Scikit, EDS-Pseudo, EDS-Teva sur l’espace Github de l’AP-HP github.com/aphp. 
+    \hspace{0.1em} Mon sujet de stage porte sur le développement d’algorithmes avancés par deep-learning pour la segmentation des documents PDFs cliniques à l’AP-HP.
+    \hspace{0.1em} L’objectif principal du stage est l’amélioration de l’algorithme existant pour permettre la segmentation des documents en section ainsi que l’extraction des tableaux dans un format exploitable pour la retranscription textuelle et l’enrichissement des bases de données.
+
+    \section{Contexte et problématique} 
+    Dans un contexte de réutilisation croissante des dossiers de patients informatisés (DPI) dans les entrepôts de données de santé (EDS) tels que celui de l’Assistance Publique - Hôpitaux de Paris (AP-HP), a  ouvert de nouvelles voies pour la recherche épidémiologique, la pharmacovigilance, et le développement de modèles prédictifs diagnostiques et thérapeutiques. Les algorithmes de traitement automatique du langage naturel se révèlent d’importance cruciale pour extraire massivement des informations cliniques qui manqueraient en partie dans les bases de données structurées issues des logiciels de soin, tels que les médicaments prescrits ou les antécédents.
+    \hspace{0.1em} Toutefois, ces algorithmes sont conçus pour des textes bruts, tandis qu’une majorité des documents intégrés à l’EDS de l’AP-HP sont présents sous forme PDF, scannés ou non, avec des mises en page variable selon le logiciel clinique utilisé. Cette caractéristique conduit souvent à une perte partielle  de la structure des documents, notamment en ce qui concerne l’agencement des sections et des tableaux, lors de l’extraction de texte, introduisant des erreurs et diminuant l’efficacité des algorithmes d’extraction d’informations textuelles en aval. La détection des tableaux s’inscrit dans la problématique plus large de la détection de l’ordre de lecture, pour laquelle il sera possible de s’appuyer sur des travaux existants (Gu et al, 2022; Wang et al, 2021). Il est ainsi nécessaire de mettre en place des algorithmes d’intégration de documents permettant la bonne restitution du contenu des PDFs, tout en prenant en compte les contraintes liées à l’infrastructure du cluster de l’EDS et à la volumétrie des données à intégrer. Une première étude (Gérardin et Wajsbürt, 2021) a permis de produire un modèle de segmentation des comptes-rendus cliniques. Toutefois, le modèle ne permet pas l’extraction des sections et des tableaux, qui font l’objectif de mon stage.
+
+    \section{Revue de littérature}
+    Nous avons fait une revue de littérature pour savoir ce qui est proposé dans le cadre de notre problématique. Dans un premier temps, afin de mieux comprendre le modèle existant, nous avons revu les papiers sur lesquels il est basé. Ensuite, nous en avons revus d’autres en lien avec l’objectif du stage, notamment sur la création d’un dataset d’apprentissage et pour le développement de modèles d’apprentissage profond par Deep-Learning. En autres, nous avons revu les papiers suivants.
+
+    \begin{itemize}
+        \item LayoutLMv3 \cite{layoutlmv3}: est un modèle de Transformer multimodale  pré-entrainé pour l’apprentissage de documents par IA. Il est finetuné pour servir de base au modèle existant. Il s’inscrit dans la suite de LayoutLM et LayoutLMv2. Elle a été évaluée sur des dataset de texte: FUNSD pour le traitement de formulaire, CORD pour le traitement de reçu, DocVQA pour la visual question ansering sur des documents; et des dataset d'images: RVL-CDIP pour la classification de documents d'images, PubLayNet pour l'analyse de la mise en page de documents.
+        
+        \item PubLayNet \cite{publaynet}: est un dataset pour l'analyse de la mise en page de documents. Elle est créée en faisant automatiquement la correspondance entre les représentations XML et le contenu de plus d'un million d'articles PDF disponible publiquement sur PubMed Central. La taille deu dataset est assez suffisante, contenant plus de 360 000 document d'images où la mise en page des éléments est annoté.
+        
+        \item PubTables-1M \cite{pubtables}: est un dataset créé pour l'extraction de tables dans des documents. Il contient environ 1 million de tables extraites à partir de documents d'articles scientifiques. Il supporte plusieurs modalités d'entrées, et contains des informations détaillées sur le header avec la localisation pour les structures de table, lui rendant utile pour une large variété d'approches de modélisation.
+        
+        
+    \end{itemize}
+
+    \section{Finetunning sur PubLayNet}
+    Dans un premier, nous avons découvert et ré-entrainé le model existant. Puis, dans la problématique de l'identification de section, nous avons nous avons créer un nouveau modèle, en ajoutant une couche de MLP sur le modele de base. Nous avons utilisé les données de PubLayNet pour tester le modèle. D'abord, nous avons pré-traité le dataset. Pour ce faire nous avons mis en place une correspondance entre les lignes du pdf et les layout de PubLayNet. Nous trions les lignes chaque layout, de haut en bas et de gauche à droite, pour définir un ordre local. Ensuite nous avons annoté les lignes avec la notation de BIOUL: B pour la première ligne de section, I pour les lignes internes, L pour la dernière ligne de section, U pour une section ne contenant qu'une seule ligne. Nous avons de eu de très bonnes performances. Je n'ai les chiffres exactes, perfs de 97\% ou 98\% en test. Nous reviendrons avec ce modèle dans la suite. Nous voulons d'abord construire un bon dataset qui va nous permettre d'entrainer des modèles pour toutes les taches: identifier les sections et prédiction de l'ordre, extraction des tableaux. 
+    \section{Création d'un dataset d'apprentissage sur PubMed}
+    L'objectif de cette partie est de créer un dataset d’apprentissage de plusieurs taches: 1) prédiction de l’ordre de lecture des lignes de texte, 2) repérage des sections, début de section et fin de section, 3) identification du type de chaque ligne, si une ligne est titre, sous-titre, corp de texte, pieds de page, header.
+    \hspace{0.1em} Ce dataset pourra être utilisé pour développer un modèle d'apprentissage profond capable 1) de restituer l'ordre de lecture naturel d'un ensemble des lignes de texte d’un documents PDF 2) d’effectuer un formatage ou structurer le texte à la sortie .
+    \hspace{0.1em} Nous voulons développer un modèle supervisé pour résoudre cette tache. Cependant, nous ne disposons pas de dataset propre annoté sur nos documents PDF, ce qui pose un défi majeur pour l'entraînement d’un modèle. Pour surmonter cette difficulté, nous tentons de contourner le problème avec du Transfert Learning. Nous créons un dataset à partir de données libres de PubMed Central. Cette dernière est constituée de plus d’un million de documents scientifique. Où chaque document pdf est associé à un fichier xml à partir duquel le pdf à été généré. Nous utilisons l’ordre de lecture défini dans le fichier xml pour donner un ordre aux lignes de texte du pdf lui correspondant, pour repérer les différentes sections et le type de chaque ligne. Cette base est très intéressante dans notre cas pour construire un dataset d’ordre de lecture pour ensuite pouvoir entrainé un model d’apprentissage profond par deep-learning pour la restitution des lignes de texte lors de la segmention d’un document pdf. En particulier, elle nous permet de repérer les sections et sous-sections et le type des lignes grâce aux balises associées aux noeuds et également l’ordre de lecture des structures complexes comme les tableaux. C’est la raison majeure pour laquelle nous la choisissons. En outre, elle a été utilisée dans la création du dataset PubLayNet dont nous nous inspirons fortement de la méthode utilisée dans le papier pour la création de notre dataset. Cette dernière n’étant pas released par ses développeurs. Nous avons dû développer un algorithme pour créer notre dataset. Bien qu’elle nous aurait avancés, le dataset que nous voulons créer diffère de celui de PubLayNet. La différence majeure réside dans le fait que nous voulons définir un ordre de lecture sur lignes de pdf alors que PubLayNet fait un matching de bloc de texte de pdf aux noeuds du fichier xml pour identifier(localiser) sur le pdf les différents type de noeuds du xml en l'occurrence les tables, les figures, les titres, sous titres, sections, sous-sections.
+    \hspace{.1em} Le premier model que nous voulons implémenter est un model de prédiction, qui à partir d’un ensemble de lignes de textes extraites d’un pdf qu’il reçoit en entrée retourne à sa sortie les lignes dans l’ordre naturel de lecture, pour chaque ligne sa position dans cet cet ordre.
+    \hspace{.1em} Un deuxième modèle de prédiction que nous voulons également implémenter aura pour but d’identifier les sections, i.e pour chaque ligne de texte du pdf si elle est un début de section, une fin de section, interne dans une section ou bien si la ligne est isolée en d’autres termes si elle est à la fois un début et une fin de section.
+    \hspace{.1em} Un troisième modèle qui pourra identifier le type de chaque ligne extraite du document pdf.
+    \hspace{.1em} Ces trois taches, ordre de lecture, identifications des sections et type de chaque ligne nous permettrons de reconstituer parfaitement tout le texte du pdf dans son état d’origine dans le bon ordre avec la bon strcuture. 
+    \hspace{.1em} Les modèles que nous implémenterons seront dans la partie 3.
+    \hspace{.1em} Pour tenir en compte le double/triple but de nos futurs modèles, notre algorithme de création de la base d’apprentissage tentera dans un premier temps de matcher chaque ligne du pdf à exactement un noeud du xml. 
+    \hspace{.1em} Nous utilisons PdfMiner pour extraire le texte du pdf. PdfMiner renvoie pour chaque ligne de texte un textbox. Un textbox (tb) est une structure contenant des informations sur la ligne extraire du pdf, notamment le texte de la ligne, le numéro de page dans le document, les coordonnées de la ligne sur la page, et d’autres informations qui ne nous intéressent pas beaucoup dans notre algorithme comme la police de texte, sa taille, etc.
+    \hspace{.1em} Nous utilisons la bibliothèque etree pour sélectionner les noeuds du document xml que nous souhaitons matcher. Un noeud est un noeud xml avec éventuellement une balise ouvrante et une autre fermante, qui pouvant contenir d’autres noeuds fils à l’intérieur.
+    \hspace{.1em} Puis nous attribuons à chaque text box associé à un noeud un ordre partiel parmi tous les text boxes qui compose le noeud, ordre local au noeud. Ainsi nous pouvons facilement inférer l’ordre global dans le document en reprenant l’ordre des noeuds dans le fichier xml. Cependant quelques manipulations seront nécessaires pour arriver à cette fin. En effet, d’une part les noeuds de tableau n’ont pas le même ordre dans les documents pdfs et xmls. Ils sont dans le noeud float-groupe dans le fichier xml. Donc pour reconstruire l’ordre global de tout un document, il est nécessaire de réaligner d’abord les positions des tableaux dans avec les noeuds de body. Nous faisons ce réalignement à postériori. Nous passons l’algo avec les noeuds body dans un premier temps puis ceux de type table dans un second.  Nous réalisons une insertion des noeuds tableau dans les noeuds de body qui sont eux déjà dans un bon ordre. Nous utilisons pour ça les numéros de pages des lignes de texte et leurs coordonnées sur le plan pour trouver leurs positions d’insertion. Et également cette raison que la première étape de matching des noeuds pour attribuer un ordre partiel aux lignes est faite en plusieurs temps d’abord avec les noeuds de front, puis ceux de body et ensuite ceux de tableau. Les noeuds figures ne sont pas pris en considération au vu de notre but d’application: du texte.
+
+    \section{Algorithme}
+    Nous décrivons ci-dessous l’algorithme que nous avons codé pour cette tache.
+    Cet algorithme repose sur des hypothèses qui résultent en raison des structures des documents de bases PDFs.
+    
+\begin{algorithm}
+    \caption{An algorithm with caption}\label{alg:cap}
+    \begin{algorithmic}
+    \Require $n \geq 0$
+    \Ensure $y = x^n$
+    \State $y \gets 1$
+    \State $X \gets x$
+    \State $N \gets n$
+    \While{$N \neq 0$}
+    \If{$N$ is even}
+        \State $X \gets X \times X$
+        \State $N \gets \frac{N}{2}$  \Comment{This is a comment}
+    \ElsIf{$N$ is odd}
+        \State $y \gets y \times X$
+        \State $N \gets N - 1$
+    \EndIf
+    \EndWhile
+    \end{algorithmic}
+\end{algorithm}
+
+
+    % bibliographie
+    \bibliographystyle{plain}
+    \bibliography{refs}
+\end{multicols}
+
+\hfil
+\end{document}
