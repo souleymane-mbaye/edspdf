@@ -197,11 +197,18 @@ def get_paths(file_dir):
     
     return pdf_path, xml_path
 
+class Line():
+    def __init__(self, tb):
+        self.text_box = tb
+        self.hb_gd = hb_gd
+        self.node = node_id
+        self.label = label
 
 class Node():
-    def __init__(self, xml_node, id=None, color='', bg_color='',r0='', entropie_threshold=0):
+    def __init__(self, xml_node, id=None, color='', bg_color='',r0='',type='body', entropie_threshold=0):
         self.id = id
         self.cpt = 0
+        self.type = type
         self.xml_node = xml_node
         self.pdf_path = None
         self.xml_path = None
@@ -215,6 +222,70 @@ class Node():
         self.bg_color = bg_color
         self.r0 = r0
         self.entropie_threshold = entropie_threshold
+    
+    def labelise_bloc(self):
+        if self.type == 'front':
+            for tb,_ret in self.bloc.ltb_ret:
+                tb.label = 'front'
+        
+        if self.type == 'table':
+            for tb,_ret in self.bloc.ltb_ret:
+                tb.label = 'table'
+            
+        if self.type == 'body':
+            title_text = ''
+            p_text = ''
+
+            if self.xml_node.tag == 'title':
+                text = unidecode(" ".join(self.xml_node.itertext()))
+                title_text += delete_white_spaces(text)
+
+            if self.xml_node.tag == 'p':
+                text = unidecode(" ".join(self.xml_node.itertext()))
+                p_text += delete_white_spaces(text)
+                
+            if self.xml_node.tag == 'sec':
+                for child in self.xml_node:
+                    if child.tag == 'title':
+                        text = unidecode(" ".join(child.itertext()))
+                        title_text += delete_white_spaces(text)
+                    if child.tag == 'p':
+                        text = unidecode(" ".join(child.itertext()))
+                        p_text += delete_white_spaces(text)
+            #
+            k = 0
+            next_tb_title = False
+            for tb,_ret in self.bloc.ltb_ret:
+                if next_tb_title:
+                    tb.label = 'title'
+                    next_tb_title = False
+                    k += 1
+                    continue
+                
+                tb_text = unidecode(tb.text)
+                tb_text = delete_white_spaces(tb_text)
+                ret = False
+                if len(title_text) > 0:
+                    ret = tb_match_(tb_text[:len(title_text)], title_text)
+                if ret:
+                    tb.label = 'title'
+                    k += 1
+                    if ret[-1].end < len(title_text)-3:
+                        next_tb_title = True
+                    else:
+                        break
+                else:
+                    break
+
+            for tb,_ret in self.bloc.ltb_ret[k:]:
+                tb.label = 'p'
+        # end if body
+    
+    def to_json(self, node_type, table_num=None):
+        if  self.bloc is None: return []
+        self.labelise_bloc()
+        
+        return self.bloc.to_json(self.id,node_type,table_num)
     
     def reset(self):
         self.full = False
@@ -243,7 +314,7 @@ class Node():
         return ret
     
     def merge(self):
-        itable, inode = 0, 26
+        # itable, inode = 1, 10
         # if self.r0 == f't{itable}-' and self.id==inode:
         #     print('Avant tri')
         #     self.print_node('  ')
@@ -252,6 +323,7 @@ class Node():
         #     print('\nAprès tri')
         #     self.print_node('  ')
         end = None
+        deb = 0
         while True:
             # if self.r0 == f't{itable}-' and self.id==inode:
             #     print('Flows')
@@ -260,7 +332,8 @@ class Node():
             tb_merge1,tb_merge2 = None,None
             dmin = None
             ok_m = False
-            for ibloc1, bloc1 in enumerate(self.lblocs):    # prec bloc
+            for ibloc1 in range(deb, len(self.lblocs)): # enumerate(deb, self.lblocs):     prec bloc
+                bloc1 = self.lblocs[ibloc1]
                 bloc1_last_tb, bloc1_last_ret = bloc1.get_last() # last line of prec bloc
                 # test if node if full, end of node
                 if bloc1_last_ret[-1].end >= len(self.text_del) and \
@@ -270,6 +343,7 @@ class Node():
                 
                 for ibloc2 in range(1+ibloc1, len(self.lblocs)):    # next bloc
                     bloc2 = self.lblocs[ibloc2]
+                    if bloc1.id.split('-')[0] in bloc2.merged_ids: continue   # dejà merged
                     bloc2_first_tb, bloc2_first_ret = bloc2.get_first() # first lin of next bloc
                     
                     # bloc1 text short and dist with bloc2 > threshold
@@ -278,7 +352,7 @@ class Node():
                     
                     fl, (ret_prec, ret_next) = is_following(bloc1_last_ret,bloc2_first_ret)
                     if fl:
-                        # if self.r0 == f't{itable}-' and self.id==inode and bloc2_first_tb.page_num==2:
+                        # if self.r0 == f't{itable}-' and self.id==inode and bloc2_first_tb.page_num==5:
                         #     print(f'\n  ------------------\n')
                         #     print(f'  --> folow entre {ibloc1} et {ibloc2} \n    {bloc1_last_ret} {bloc1_last_tb}\n    {bloc2_first_ret} {bloc2_first_tb}')
                         #     self.lblocs[ibloc1].print_bloc('  ')
@@ -294,20 +368,28 @@ class Node():
                             # if ret_merge2[0].start == ret_next[0].start and \
                             if abs(bloc2_first_tb.y0 - bloc1_last_tb.y0) < abs(tb_merge1.y0 - tb_merge2.y0) and \
                                 len(tb_merge2.text)+2 < len(bloc2_first_tb.text):
-                                # if self.r0 == f't{itable}-' and self.id==inode and bloc2_first_tb.page_num==2:
+                                # if self.r0 == f't{itable}-' and self.id==inode and bloc2_first_tb.page_num==5:
                                 #     print('  prio sur len()')
                                 imerge1,imerge2 = ibloc1,ibloc2
                                 ret_merge1,ret_merge2 = ret_prec, ret_next
                                 tb_merge1,tb_merge2 = bloc1_last_tb, bloc2_first_tb
                             
                             # priorité sur dist plus petite
-                            if ret_merge2[0].start == ret_next[0].start and \
+                            # ret_merge2[0].start == ret_next[0].start and \
+                            if imerge1 == ibloc1 and \
                                 ret_next[0].dist < ret_merge2[0].dist:
-                                # if self.r0 == f't{itable}-' and self.id==inode and bloc2_first_tb.page_num==2:
+                                # if self.r0 == f't{itable}-' and self.id==inode and bloc2_first_tb.page_num==5:
                                 #     print('  prio sur dist')
                                 imerge1,imerge2 = ibloc1,ibloc2
                                 ret_merge1,ret_merge2 = ret_prec, ret_next
                                 tb_merge1,tb_merge2 = bloc1_last_tb, bloc2_first_tb
+                            
+                            # # priorité sur l'ordre de tri (deux blocs successifs)
+                            # if abs(bloc2_first_tb.y0 - bloc1_last_tb.y0) <= abs(tb_merge1.y0 - tb_merge2.y0) and \
+                            #     ibloc2 == imerge2 and imerge1<ibloc1 :
+                            #     imerge1,imerge2 = ibloc1,ibloc2
+                            #     ret_merge1,ret_merge2 = ret_prec, ret_next
+                            #     tb_merge1,tb_merge2 = bloc1_last_tb, bloc2_first_tb
                             
                             # priorité dans une page
                             if (tb_merge1.page_num != tb_merge2.page_num) and \
@@ -318,8 +400,7 @@ class Node():
                                 ret_merge1,ret_merge2 = ret_prec, ret_next
                                 tb_merge1,tb_merge2 = bloc1_last_tb, bloc2_first_tb
                         #
-                        # if self.r0 == f't{itable}-' and self.id==inode and bloc2_first_tb.page_num==2:
-                        #     print(f'\n  ------------------\n')
+                        # if self.r0 == f't{itable}-' and self.id==inode and bloc2_first_tb.page_num==5:
                         #     print(f'  <-- prio {imerge1} et {imerge2}')
                         #     self.lblocs[imerge1].print_bloc('  ')
                         #     self.lblocs[imerge2].print_bloc('  ')
@@ -337,12 +418,13 @@ class Node():
             
             # update ret at merging
             # if self.r0 == f't{itable}-' and self.id==inode:
-            #     print(f'\n\nMerge de bloc {imerge1} et {imerge2}')
+            #     print(f'\n\nMerge de bloc {imerge1}{self.lblocs[imerge1].merged_ids} et {imerge2}{self.lblocs[imerge2].merged_ids}')
             #     self.lblocs[imerge1].print_bloc('  ')
             #     self.lblocs[imerge2].print_bloc('  ')
             bloc1_copy = self.lblocs[imerge1].copy_bloc()
             tb_1,ret1 = self.lblocs[imerge1].get_last() # last line of prec block
             tb_2,ret2 = self.lblocs[imerge2].get_first()  # first line of next block
+            tb_3,ret3 = self.lblocs[imerge2].get_last() # last line of next block, test if end ok
             self.lblocs[imerge1].set_last(tb_1, ret_merge1)
             self.lblocs[imerge2].set_first(tb_2, ret_merge2)
 
@@ -351,6 +433,13 @@ class Node():
             # if len(tb_2.text) <= 2 or
             self.lblocs = self.lblocs[:1+imerge1] + [bloc1_copy] + self.lblocs[1+imerge1:] # [avant,imerge1,copy,apres]
             self.lblocs = self.lblocs[:1+imerge2] + self.lblocs[1+1+imerge2:]
+            # test if node if full, end of node
+            if ret3[-1].end >= len(self.text_del) and \
+                len(self.lblocs[imerge1].text) >= len(self.text_del):
+                end = self.lblocs[imerge1]
+                break
+            deb = imerge1
+            
             # if self.r0 == f't{itable}-' and self.id==inode:
             #     print(f'\nAprès merge de {imerge1} et {imerge2}')
             #     self.print_node('  ')
@@ -381,9 +470,16 @@ class Node():
                 tb.rank = f'{self.r0}{self.id}-{rank}'
                 tb.color = self.color
                 tb.bg_color = self.bg_color
+        elif self.type == 'table':
+            self.lblocs = []
 
                     
-    
+    def filter_bloc(self, page_num):
+        f = self.bloc.filter_bloc(page_num)
+        if not f:
+            self.bloc = None
+            self.full = False
+        
     def filter_blocs(self):
         new_lblocs = []
         for bloc in self.lblocs:
@@ -399,6 +495,7 @@ class Node():
             min_start = first_ret[0].start
             
             return first_tb.page_num, min_start, first_tb.y0
+        # self.lblocs = sorted(self.lblocs, key=lambda bloc: str(bloc.id), reverse=True)
         self.lblocs = sorted(self.lblocs, key=lambda bloc: sorted_by_first_tb(bloc))
     
     def add_bloc(self, bloc):
@@ -436,18 +533,43 @@ class Node():
         
 class Bloc():
     def __init__(self, ltb_ret=[], id=None):
-        self.id = id
+        self.id = str(id)
+        self.cpt = 0
         self.ltb_ret = [(tb,ret) for tb,ret in ltb_ret]
         self.text = "".join([unidecode(tb.text) for tb,ret in self.ltb_ret])
+        self.merged_ids = set(self.id)
+    
+    def to_json(self,node_num,node_type,table_num=None):
+        return [
+            {
+                "x0":                       tb.x0,
+                "x1":                       tb.x1,
+                "y0":                       tb.y0,
+                "y1":                       tb.y1,
+                "text":                     tb.text,
+                "page_num":                 tb.page_num,
+                "label":                    tb.label,
+                "up_down_left_right":       tb.up_down_left_right,
+                "node_type":                node_type,
+                "node_num":                 node_num,
+                "rank":                     rank,
+                "table_num": "None" if table_num is None else table_num,
+            }
+            for rank, (tb,_) in enumerate(self.ltb_ret)
+        ]
+            
     
     def filter_bloc(self, page_num):
-        self.ltb_ret = list(filter(lambda tb_ret: tb_ret[0].page_num == page_num, self.ltb_ret))
+        l = list(filter(lambda tb_ret: tb_ret[0].page_num == page_num, self.ltb_ret))
+        self.ltb_ret = l
+        return l if len(l)>0 else False
     
     def print_bloc(self, esc=''):
         text = " - ".join([unidecode(tb.text) for tb,ret in self.ltb_ret])
-        print(f'{esc}Id {self.id} nb tbs {len(self.ltb_ret)}\n{esc}Text: `{text}`')
+        print(f'{esc}Id {self.id} nb tbs {len(self.ltb_ret)}\n{esc}Text: `{text}`\n{esc}merged ids: `{self.merged_ids}`')
         for rank, (tb,ret) in enumerate(self.ltb_ret):
             print(f'{esc}  {(rank):2d} p-{tb.page_num} `{unidecode(tb.text)}` \t\t-> {ret} {tb}')
+            # print(f'{esc}  {(rank):2d} p-{tb.page_num} hb_gd-{tb.up_down_left_right} `{unidecode(tb.text)}` \t\t-> {ret} {tb}')
     
     def get_first(self):
         first = self.ltb_ret[0] if len(self.ltb_ret) > 0 else None
@@ -463,7 +585,9 @@ class Bloc():
     
     def copy_bloc(self):
         l = [(tb,ret) for tb,ret in self.ltb_ret]
-        new_bloc = Bloc(l,id=f'{self.id}*')
+        new_bloc = Bloc(l,id=f'{self.id}-{self.cpt}')
+        self.cpt += 1
+        new_bloc.merged_ids = set([_id for _id in self.merged_ids])
         return new_bloc
     
     def add_tb_ret(self, tb, ret):
@@ -472,6 +596,8 @@ class Bloc():
     def append_bloc(self, bloc):
         self.ltb_ret.extend(bloc.ltb_ret)
         self.text += bloc.text
+        self.merged_ids.update(bloc.merged_ids)
+        bloc.merged_ids = set([_id for _id in self.merged_ids])
     
     def filter_tbs(self):
         new_bloc = []
