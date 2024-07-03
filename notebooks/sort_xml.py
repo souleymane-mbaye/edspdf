@@ -227,10 +227,14 @@ class Node():
         if self.type == 'front':
             for tb,_ret in self.bloc.ltb_ret:
                 tb.label = 'front'
+                tb.node_type = 'front'
+                tb.node_num = self.id
         
         if self.type == 'table':
             for tb,_ret in self.bloc.ltb_ret:
                 tb.label = 'table'
+                tb.node_type = 'table'
+                tb.node_num = self.id
             
         if self.type == 'body':
             title_text = ''
@@ -258,6 +262,8 @@ class Node():
             for tb,_ret in self.bloc.ltb_ret:
                 if next_tb_title:
                     tb.label = 'title'
+                    tb.node_type = 'body'
+                    tb.node_num = self.id
                     next_tb_title = False
                     k += 1
                     continue
@@ -269,6 +275,8 @@ class Node():
                     ret = tb_match_(tb_text[:len(title_text)], title_text)
                 if ret:
                     tb.label = 'title'
+                    tb.node_type = 'body'
+                    tb.node_num = self.id
                     k += 1
                     if ret[-1].end < len(title_text)-3:
                         next_tb_title = True
@@ -279,13 +287,15 @@ class Node():
 
             for tb,_ret in self.bloc.ltb_ret[k:]:
                 tb.label = 'p'
+                tb.node_type = 'body'
+                tb.node_num = self.id
         # end if body
     
-    def to_json(self, node_type, table_num=None):
+    def to_json(self, table_num=None):
         if  self.bloc is None: return []
         self.labelise_bloc()
         
-        return self.bloc.to_json(self.id,node_type,table_num)
+        return self.bloc.to_json(node_type=self.type, node_num=self.id, table_num=table_num)
     
     def reset(self):
         self.full = False
@@ -539,21 +549,16 @@ class Bloc():
         self.text = "".join([unidecode(tb.text) for tb,ret in self.ltb_ret])
         self.merged_ids = set(self.id)
     
-    def to_json(self,node_num,node_type,table_num=None):
+    def to_json(self, node_type, node_num,table_num=None):
+        last = len(self.ltb_ret) - 1
         return [
             {
-                "x0":                       tb.x0,
-                "x1":                       tb.x1,
-                "y0":                       tb.y0,
-                "y1":                       tb.y1,
-                "text":                     tb.text,
-                "page_num":                 tb.page_num,
-                "label":                    tb.label,
-                "up_down_left_right":       tb.up_down_left_right,
-                "node_type":                node_type,
-                "node_num":                 node_num,
+                **tb.dict(filter=lambda attr, value: attr.name != "doc"),
+                "node_type": node_type,
+                "node_num":  node_num,
                 "rank":                     rank,
-                "table_num": "None" if table_num is None else table_num,
+                "bioul": 'B' if rank==0 else ('L' if rank==last else 'I'),
+                "table_num": table_num,
             }
             for rank, (tb,_) in enumerate(self.ltb_ret)
         ]
@@ -1037,3 +1042,147 @@ def dist_tb(tb_1, tb_2):
     de = np.sqrt((xm1-xm2)**2 + (ym1-ym2)**2)
     dy = abs(tb_1.y0 - tb_2.y0)
     return min(de, dy)
+
+
+def match_pdf_xml_2_json(pmc_dir,page_num=None, v=False):
+    one_page_only = False if page_num is None else True
+    
+    pdf_path, xml_path = get_paths(file_dir = pmc_dir)
+
+    split_dir = pmc_dir.split('/')
+    pmc = split_dir[-1] if len(split_dir[-1]) > 0 else split_dir[-2]
+    pmc_data = {
+        'pmc': pmc,
+        'pdf_path': str(pdf_path),
+        'xml_path': str(xml_path),
+        'nb_pages': 1,
+        'lines': []
+    }
+    
+    # Read PDF
+    pdf = Path(pdf_path).read_bytes()
+    doc: PDFDoc = model.get_pipe("extractor")(pdf)
+
+    if one_page_only:
+        _pages_num = [page_num-1, page_num, page_num+1]
+        if page_num == 0:
+            _pages_num = _pages_num[1:]
+        dict_page_text_boxes = {page_num-1: [], page_num: [], page_num+1: []}
+        cpt_page_text_boxes = {page_num-1: 0, page_num: 0, page_num+1: 0}
+        for tb in doc.content_boxes:
+            if tb.page_num in _pages_num: # == page_num: # just one page
+                dict_page_text_boxes[tb.page_num].append(tb)
+                tb.rank = None
+                tb.inode = None
+                tb.up_down_left_right = cpt_page_text_boxes[tb.page_num]
+                cpt_page_text_boxes[tb.page_num] += 1
+    else:   # All pages
+        dict_page_text_boxes = {}
+        cpt_page_text_boxes = {}
+        for tb in doc.content_boxes:
+            if tb.page_num not in dict_page_text_boxes:
+                dict_page_text_boxes[tb.page_num] = []
+                cpt_page_text_boxes[tb.page_num] = 0
+            dict_page_text_boxes[tb.page_num].append(tb)
+            tb.rank = None
+            tb.inode = None
+            tb.up_down_left_right = cpt_page_text_boxes[tb.page_num]
+            cpt_page_text_boxes[tb.page_num] += 1
+        pmc_data['nb_pages'] = len(dict_page_text_boxes)
+
+
+    # Read XML
+    xml = open(xml_path, 'rb')
+    tree = etree.parse(xml)
+    # root = tree.getroot()
+    
+    
+    # body nodes matching
+    xml_body_nodes = get_body_nodes(tree)   # xml nodes
+    body_nodes = []
+    for id, xml_node in enumerate(xml_body_nodes):
+        node = Node(xml_node, id, color='black', bg_color='cyan', r0='b',type='body')
+        body_nodes.append(node)
+    # body_nodes = tqdm(body_nodes, mininterval=1)
+    get_matches(body_nodes, dict_page_text_boxes, v=False)
+    for node in body_nodes:
+        if node.full:
+            if one_page_only:
+                node.filter_bloc(page_num)
+            node_lines = node.to_json()
+            pmc_data['lines'].extend(node_lines)
+    # matching body stats
+    nb_body_nodes = len(body_nodes)
+    nb_matched_body_nodes = len([0 for node in body_nodes if node.full])
+    pmc_data['nb_body_nodes'] = nb_body_nodes
+    pmc_data['nb_matched_body_nodes'] = nb_matched_body_nodes
+    # end get body nodes matching
+    if v: print(f'body nodes {nb_matched_body_nodes}/{nb_body_nodes}')
+
+    
+    # front nodes matching
+    if (not one_page_only) or (page_num == 0):
+        xml_front_nodes = get_front_nodes(tree) # xml nodes
+        front_nodes = []
+        for id,xml_node in enumerate(xml_front_nodes):
+            node = Node(xml_node, id, color='yellow', bg_color='black', r0='f',type='front')    # , entropie_threshold=0.1)
+            front_nodes.append(node)
+        # front_nodes = tqdm(front_nodes, mininterval=1)
+        get_matches(front_nodes, {0: dict_page_text_boxes[0]}, v=False)
+        for node in front_nodes:
+            if node.full:
+                if one_page_only:
+                    node.filter_bloc(page_num)
+                node_lines = node.to_json()
+                pmc_data['lines'].extend(node_lines)
+        # matching front stats
+        nb_front_nodes = len(front_nodes)
+        nb_matched_front_nodes = len([0 for node in front_nodes if node.full])
+        pmc_data['nb_front_nodes'] = nb_front_nodes
+        pmc_data['nb_matched_front_nodes'] = nb_matched_front_nodes
+        # end front nodes matching
+        if v: print(f'front nodes {nb_matched_front_nodes}/{nb_front_nodes}')
+    
+    
+    # tables nodes matching
+    xml_table_nodes = get_tables_nodes(tree)    # xml nodes
+    table_nodes = []
+    for itable,xml_t in enumerate(xml_table_nodes):
+        t_nodes = []
+        for id,xml_node in enumerate(xml_t):
+            node = Node(xml_node, id, color='red', bg_color='white', r0=f't{itable}-',type='table')
+            t_nodes.append(node)
+        # t_nodes = tqdm(t_nodes, mininterval=1)
+        table_nodes.append(t_nodes)
+    pmc_data['tables_matching_stats'] = []
+    for itable,t_nodes in enumerate(table_nodes):
+        get_matches(t_nodes, dict_page_text_boxes, v=False)
+        for node in t_nodes:
+            if node.full:
+                if one_page_only:
+                    node.filter_bloc(page_num)
+                node_lines = node.to_json(table_num=itable)
+                pmc_data['lines'].extend(node_lines)
+        # matching front stats
+        nb_t_nodes = len(t_nodes)
+        nb_matched_t_nodes = len([0 for node in t_nodes if node.full])
+        pmc_data['tables_matching_stats'].append((nb_matched_t_nodes,nb_t_nodes))
+        # end table nodes matching
+        if v: print(f'table {itable} nodes {nb_matched_t_nodes}/{nb_t_nodes}')
+    # end get tables nodes matching
+    
+    
+    # Affichage
+    if v:
+        pages = [page for page in show_annotations(doc.content, doc.content_boxes)]
+        print(f'Nb pages {len(pages)}')
+        if one_page_only:
+            for p in _pages_num:
+                display(pages[p])
+        else:
+            for page in pages:
+                display(page)
+    # printXML(tree)
+    
+    
+    return pmc_data
