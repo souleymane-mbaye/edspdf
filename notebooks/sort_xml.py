@@ -11,6 +11,10 @@ from lxml import etree
 from copy import deepcopy
 from graphviz import Source
 from IPython.display import display, Image
+from edspdf import Pipeline
+from edspdf.structures import Box, PDFDoc
+from edspdf.visualization.annotations import show_annotations
+
 
 xslt_dir = '../../edspdf-train/data/xslt/'
 
@@ -334,7 +338,7 @@ class Node():
         #     self.print_node('  ')
         end = None
         deb = 0
-        while True:
+        for it in range(100):
             # if self.r0 == f't{itable}-' and self.id==inode:
             #     print('Flows')
             imerge1,imerge2 = None,None
@@ -424,7 +428,9 @@ class Node():
                 if ok_m:
                     break
             if imerge1 is None:
-                break   # No more merging posssible
+                if deb == 0: break   # No more merging posssible
+                deb = 0
+                continue
             
             # update ret at merging
             # if self.r0 == f't{itable}-' and self.id==inode:
@@ -1044,8 +1050,11 @@ def dist_tb(tb_1, tb_2):
     return min(de, dy)
 
 
-def match_pdf_xml_2_json(pmc_dir,page_num=None, v=False):
+def match_pdf_xml_2_json(pmc_dir, model, page_num=None, ltype=['front','body','table'], v=False):
     one_page_only = False if page_num is None else True
+    front_type = True if 'front' in ltype else False
+    body_type = True if 'body' in ltype else False
+    table_type = True if 'table' in ltype else False
     
     pdf_path, xml_path = get_paths(file_dir = pmc_dir)
 
@@ -1056,7 +1065,10 @@ def match_pdf_xml_2_json(pmc_dir,page_num=None, v=False):
         'pdf_path': str(pdf_path),
         'xml_path': str(xml_path),
         'nb_pages': 1,
-        'lines': []
+        'front_lines': [],
+        'body_lines': [],
+        'table_lines': [],
+        'not_matched_lines': [],
     }
     
     # Read PDF
@@ -1098,30 +1110,31 @@ def match_pdf_xml_2_json(pmc_dir,page_num=None, v=False):
     
     
     # body nodes matching
-    xml_body_nodes = get_body_nodes(tree)   # xml nodes
-    body_nodes = []
-    for id, xml_node in enumerate(xml_body_nodes):
-        node = Node(xml_node, id, color='black', bg_color='cyan', r0='b',type='body')
-        body_nodes.append(node)
-    # body_nodes = tqdm(body_nodes, mininterval=1)
-    get_matches(body_nodes, dict_page_text_boxes, v=False)
-    for node in body_nodes:
-        if node.full:
-            if one_page_only:
-                node.filter_bloc(page_num)
-            node_lines = node.to_json()
-            pmc_data['lines'].extend(node_lines)
-    # matching body stats
-    nb_body_nodes = len(body_nodes)
-    nb_matched_body_nodes = len([0 for node in body_nodes if node.full])
-    pmc_data['nb_body_nodes'] = nb_body_nodes
-    pmc_data['nb_matched_body_nodes'] = nb_matched_body_nodes
-    # end get body nodes matching
-    if v: print(f'body nodes {nb_matched_body_nodes}/{nb_body_nodes}')
+    if body_type:
+        xml_body_nodes = get_body_nodes(tree)   # xml nodes
+        body_nodes = []
+        for id, xml_node in enumerate(xml_body_nodes):
+            node = Node(xml_node, id, color='black', bg_color='cyan', r0='b',type='body')
+            body_nodes.append(node)
+        # body_nodes = tqdm(body_nodes, mininterval=1)
+        get_matches(body_nodes, dict_page_text_boxes, v=False)
+        for node in body_nodes:
+            if node.full:
+                if one_page_only:
+                    node.filter_bloc(page_num)
+                node_lines = node.to_json()
+                pmc_data['body_lines'].extend(node_lines)
+        # matching body stats
+        nb_body_nodes = len(body_nodes)
+        nb_matched_body_nodes = len([0 for node in body_nodes if node.full])
+        pmc_data['nb_body_nodes'] = nb_body_nodes
+        pmc_data['nb_matched_body_nodes'] = nb_matched_body_nodes
+        # end get body nodes matching
+        if v: print(f'body nodes {nb_matched_body_nodes}/{nb_body_nodes}')
 
     
     # front nodes matching
-    if (not one_page_only) or (page_num == 0):
+    if front_type and ((not one_page_only) or (page_num == 0)): # front page_num 0 (first page)
         xml_front_nodes = get_front_nodes(tree) # xml nodes
         front_nodes = []
         for id,xml_node in enumerate(xml_front_nodes):
@@ -1134,7 +1147,7 @@ def match_pdf_xml_2_json(pmc_dir,page_num=None, v=False):
                 if one_page_only:
                     node.filter_bloc(page_num)
                 node_lines = node.to_json()
-                pmc_data['lines'].extend(node_lines)
+                pmc_data['front_lines'].extend(node_lines)
         # matching front stats
         nb_front_nodes = len(front_nodes)
         nb_matched_front_nodes = len([0 for node in front_nodes if node.full])
@@ -1145,32 +1158,36 @@ def match_pdf_xml_2_json(pmc_dir,page_num=None, v=False):
     
     
     # tables nodes matching
-    xml_table_nodes = get_tables_nodes(tree)    # xml nodes
-    table_nodes = []
-    for itable,xml_t in enumerate(xml_table_nodes):
-        t_nodes = []
-        for id,xml_node in enumerate(xml_t):
-            node = Node(xml_node, id, color='red', bg_color='white', r0=f't{itable}-',type='table')
-            t_nodes.append(node)
-        # t_nodes = tqdm(t_nodes, mininterval=1)
-        table_nodes.append(t_nodes)
-    pmc_data['tables_matching_stats'] = []
-    for itable,t_nodes in enumerate(table_nodes):
-        get_matches(t_nodes, dict_page_text_boxes, v=False)
-        for node in t_nodes:
-            if node.full:
-                if one_page_only:
-                    node.filter_bloc(page_num)
-                node_lines = node.to_json(table_num=itable)
-                pmc_data['lines'].extend(node_lines)
-        # matching front stats
-        nb_t_nodes = len(t_nodes)
-        nb_matched_t_nodes = len([0 for node in t_nodes if node.full])
-        pmc_data['tables_matching_stats'].append((nb_matched_t_nodes,nb_t_nodes))
-        # end table nodes matching
-        if v: print(f'table {itable} nodes {nb_matched_t_nodes}/{nb_t_nodes}')
+    if table_type:
+        xml_table_nodes = get_tables_nodes(tree)    # xml nodes
+        table_nodes = []
+        for itable,xml_t in enumerate(xml_table_nodes):
+            t_nodes = []
+            for id,xml_node in enumerate(xml_t):
+                node = Node(xml_node, id, color='red', bg_color='white', r0=f't{itable}-',type='table')
+                t_nodes.append(node)
+            # t_nodes = tqdm(t_nodes, mininterval=1)
+            table_nodes.append(t_nodes)
+        pmc_data['tables_matching_stats'] = []
+        for itable,t_nodes in enumerate(table_nodes):
+            get_matches(t_nodes, dict_page_text_boxes, v=False)
+            for node in t_nodes:
+                if node.full:
+                    if one_page_only:
+                        node.filter_bloc(page_num)
+                    node_lines = node.to_json(table_num=itable)
+                    pmc_data['table_lines'].extend(node_lines)
+            # matching front stats
+            nb_t_nodes = len(t_nodes)
+            nb_matched_t_nodes = len([0 for node in t_nodes if node.full])
+            pmc_data['tables_matching_stats'].append((nb_matched_t_nodes,nb_t_nodes))
+            # end table nodes matching
+            if v: print(f'table {itable} nodes {nb_matched_t_nodes}/{nb_t_nodes}')
     # end get tables nodes matching
     
+    for tb in doc.content_boxes:
+        if tb.inode is None:
+            pmc_data['not_matched_lines'].append({**tb.dict(filter=lambda attr, value: attr.name != "doc"),})
     
     # Affichage
     if v:
@@ -1185,4 +1202,4 @@ def match_pdf_xml_2_json(pmc_dir,page_num=None, v=False):
     # printXML(tree)
     
     
-    return pmc_data
+    return pmc_data, (doc,tree), (front_nodes, body_nodes, table_nodes)
