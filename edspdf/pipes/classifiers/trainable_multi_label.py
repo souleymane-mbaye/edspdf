@@ -133,7 +133,8 @@ class TrainableClassifier(TrainablePipe[Dict[str, Any]]):
         new_index = [label_indices[label] for label in label_voc_indices]
         new_classifier = torch.nn.Linear(
             self.embedding.output_size,
-            len(label_indices),
+            #len(label_indices),
+            2,
         )
         new_classifier.weight.data[new_index] = self.classifier.weight.data[old_index]
         new_classifier.bias.data[new_index] = self.classifier.bias.data[old_index]
@@ -186,7 +187,7 @@ class TrainableClassifier(TrainablePipe[Dict[str, Any]]):
                         batch["labels"],
                         data_dims=("line",),
                         full_names=("sample", "page", "line"),
-                        dtype=torch.long,  # <- float
+                        dtype=torch.float,  # <- float
                     ),  # n_lines * (n_labels if multi label else .)
                 }
             )
@@ -203,12 +204,18 @@ class TrainableClassifier(TrainablePipe[Dict[str, Any]]):
         logits = self.classifier(embeddings.to(self.classifier.weight.dtype)).refold(
             "line"
         )  # n_lines * n_labels
+        #print(f'\nembeddings shape: {embeddings.to(self.classifier.weight.dtype).shape} \
+        #--> first: {embeddings.to(self.classifier.weight.dtype)[0]}')
+        #print(f'\nlogits shape: {logits.shape} --> first: {logits[0]}')
+        
         if "labels" in batch:
             targets = batch["labels"].refold(logits.data_dims)
+            #
+            # print(f'type logits: {logits.dtype} -- targets type: {targets.dtype}')
             output["label_loss"] = (
                 # sig + BCELoss
-                F.binary_cross_entropy(
-                    F.sigmoid(logits),
+                F.binary_cross_entropy_with_logits(
+                    logits,
                     targets,
                     reduction="sum",
                 )
@@ -239,6 +246,7 @@ class TrainableClassifier(TrainablePipe[Dict[str, Any]]):
         ):
             
             # b.label = self.label_voc.decode(label) if b.text != "" else None
+            # print(f'\nPostProcess label {label}')
             b.label = 'U' if sum(label) == 2 else \
                         ('B' if label[0] is True else \
                         ('L' if label[1] is True else 'I'))
