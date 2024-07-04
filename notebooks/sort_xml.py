@@ -142,7 +142,7 @@ def get_body_nodes(tree):
         if jump:
             jump = False
             continue
-        if node.tag == 'title' and (i<len(r)-2) and r[1+i].tag == 'p':
+        if node.tag == 'title' and  (i<len(r)-2) and r[1+i].tag == 'p':
             sec = etree.Element('sec')
             sec.append(node)
             sec.append(r[1+i])
