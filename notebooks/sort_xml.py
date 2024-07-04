@@ -142,7 +142,7 @@ def get_body_nodes(tree):
         if jump:
             jump = False
             continue
-        if node.tag == 'title' and r[1+i].tag == 'p':
+        if node.tag == 'title' and (i<len(r)-2) and r[1+i].tag == 'p':
             sec = etree.Element('sec')
             sec.append(node)
             sec.append(r[1+i])
@@ -201,12 +201,6 @@ def get_paths(file_dir):
     
     return pdf_path, xml_path
 
-class Line():
-    def __init__(self, tb):
-        self.text_box = tb
-        self.hb_gd = hb_gd
-        self.node = node_id
-        self.label = label
 
 class Node():
     def __init__(self, xml_node, id=None, color='', bg_color='',r0='',type='body', entropie_threshold=0):
