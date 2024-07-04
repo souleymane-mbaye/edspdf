@@ -1190,15 +1190,15 @@ def match_pdf_xml_2_json(pmc_dir, model, page_num=None, ltype=['front','body','t
             pmc_data['not_matched_lines'].append({**tb.dict(filter=lambda attr, value: attr.name != "doc"),})
     
     # Affichage
-    if v:
-        pages = [page for page in show_annotations(doc.content, doc.content_boxes)]
-        print(f'Nb pages {len(pages)}')
-        if one_page_only:
-            for p in _pages_num:
-                display(pages[p])
-        else:
-            for page in pages:
-                display(page)
+    # if v:
+    #     pages = [page for page in show_annotations(doc.content, doc.content_boxes)]
+    #     print(f'Nb pages {len(pages)}')
+    #     if one_page_only:
+    #         for p in _pages_num:
+    #             display(pages[p])
+    #     else:
+    #         for page in pages:
+    #             display(page)
     # printXML(tree)
     
     
