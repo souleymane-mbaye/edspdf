@@ -197,7 +197,7 @@ def get_paths(file_dir):
 
     file_dir = Path(file_dir)
     xml_path = next(file_dir.glob("*.nxml"))
-    pdf_path = next(file_dir.glob("*.pdf"))
+    pdf_path = min(Path(file_dir).glob("*.pdf"), key=lambda f: len(str(f)))
     
     return pdf_path, xml_path
 
@@ -332,7 +332,7 @@ class Node():
         #     self.print_node('  ')
         end = None
         deb = 0
-        for it in range(5):
+        for it in range(100):
             # if self.r0 == f't{itable}-' and self.id==inode:
             #     print('Flows')
             imerge1,imerge2 = None,None
