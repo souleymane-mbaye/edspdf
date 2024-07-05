@@ -332,7 +332,7 @@ class Node():
         #     self.print_node('  ')
         end = None
         deb = 0
-        for it in range(100):
+        for it in range(5):
             # if self.r0 == f't{itable}-' and self.id==inode:
             #     print('Flows')
             imerge1,imerge2 = None,None
@@ -1103,6 +1103,35 @@ def match_pdf_xml_2_json(pmc_dir, model, page_num=None, ltype=['front','body','t
     # root = tree.getroot()
     
     
+    # tables nodes matching
+    if table_type:
+        xml_table_nodes = get_tables_nodes(tree)    # xml nodes
+        table_nodes = []
+        for itable,xml_t in enumerate(xml_table_nodes):
+            t_nodes = []
+            for id,xml_node in enumerate(xml_t):
+                node = Node(xml_node, id, color='red', bg_color='white', r0=f't{itable}-',type='table')
+                t_nodes.append(node)
+            # t_nodes = tqdm(t_nodes, mininterval=1)
+            table_nodes.append(t_nodes)
+        pmc_data['tables_matching_stats'] = []
+        for itable,t_nodes in enumerate(table_nodes):
+            get_matches(t_nodes, dict_page_text_boxes, v=False)
+            for node in t_nodes:
+                if node.full:
+                    if one_page_only:
+                        node.filter_bloc(page_num)
+                    node_lines = node.to_json(table_num=itable)
+                    pmc_data['table_lines'].extend(node_lines)
+            # matching front stats
+            nb_t_nodes = len(t_nodes)
+            nb_matched_t_nodes = len([0 for node in t_nodes if node.full])
+            pmc_data['tables_matching_stats'].append((nb_matched_t_nodes,nb_t_nodes))
+            # end table nodes matching
+            if v: print(f'table {itable} nodes {nb_matched_t_nodes}/{nb_t_nodes}')
+    # end get tables nodes matching
+    
+    
     # body nodes matching
     if body_type:
         xml_body_nodes = get_body_nodes(tree)   # xml nodes
@@ -1149,35 +1178,6 @@ def match_pdf_xml_2_json(pmc_dir, model, page_num=None, ltype=['front','body','t
         pmc_data['nb_matched_front_nodes'] = nb_matched_front_nodes
         # end front nodes matching
         if v: print(f'front nodes {nb_matched_front_nodes}/{nb_front_nodes}')
-    
-    
-    # tables nodes matching
-    if table_type:
-        xml_table_nodes = get_tables_nodes(tree)    # xml nodes
-        table_nodes = []
-        for itable,xml_t in enumerate(xml_table_nodes):
-            t_nodes = []
-            for id,xml_node in enumerate(xml_t):
-                node = Node(xml_node, id, color='red', bg_color='white', r0=f't{itable}-',type='table')
-                t_nodes.append(node)
-            # t_nodes = tqdm(t_nodes, mininterval=1)
-            table_nodes.append(t_nodes)
-        pmc_data['tables_matching_stats'] = []
-        for itable,t_nodes in enumerate(table_nodes):
-            get_matches(t_nodes, dict_page_text_boxes, v=False)
-            for node in t_nodes:
-                if node.full:
-                    if one_page_only:
-                        node.filter_bloc(page_num)
-                    node_lines = node.to_json(table_num=itable)
-                    pmc_data['table_lines'].extend(node_lines)
-            # matching front stats
-            nb_t_nodes = len(t_nodes)
-            nb_matched_t_nodes = len([0 for node in t_nodes if node.full])
-            pmc_data['tables_matching_stats'].append((nb_matched_t_nodes,nb_t_nodes))
-            # end table nodes matching
-            if v: print(f'table {itable} nodes {nb_matched_t_nodes}/{nb_t_nodes}')
-    # end get tables nodes matching
     
     for tb in doc.content_boxes:
         if tb.inode is None:
