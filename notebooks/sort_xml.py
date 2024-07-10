@@ -14,6 +14,7 @@ from IPython.display import display, Image
 from edspdf import Pipeline
 from edspdf.structures import Box, PDFDoc
 from edspdf.visualization.annotations import show_annotations
+from pathlib import Path
 
 
 xslt_dir = '../../edspdf-train/data/xslt/'
@@ -191,7 +192,6 @@ def get_tables_nodes(tree):
     return table_nodes_
     
 
-from pathlib import Path
 
 def get_paths(file_dir):
 
@@ -323,20 +323,19 @@ class Node():
         return ret
     
     def merge(self):
-        # print(f'  Node {self.id}')
-        # itable, inode, page = 5, 4, 3
-        # if self.r0 == f't{itable}-' and self.id==inode:
-        #     print(f'Avant tri {self.type}')
-        #     self.print_node('  ')
+        itable, inode, page = 2, 5, 3
+        if self.r0 == f't{itable}-' and self.id==inode:
+            print(f'Avant tri {self.type}')
+            self.print_node('  ')
         self.sort()
-        # if self.r0 == f't{itable}-' and self.id==inode:
-        #     print('\nAprès tri')
-        #     self.print_node('  ')
+        if self.r0 == f't{itable}-' and self.id==inode:
+            print('\nAprès tri')
+            self.print_node('  ')
         end = None
         deb = 0
-        for it in range(7):
-            # if self.r0 == f't{itable}-' and self.id==inode:
-            #     print('Flows')
+        for it in range(100 if self.type=='table' else 7):
+            if self.r0 == f't{itable}-' and self.id==inode:
+                print('Flows')
             imerge1,imerge2 = None,None
             ret_merge1,ret_merge2 = None,None
             tb_merge1,tb_merge2 = None,None
@@ -362,11 +361,11 @@ class Node():
                     
                     fl, (ret_prec, ret_next) = is_following(bloc1_last_ret,bloc2_first_ret)
                     if fl:
-                        # if self.r0 == f't{itable}-' and self.id==inode and bloc2_first_tb.page_num==page:
-                        #     print(f'\n  ------------------\n')
-                        #     print(f'  --> folow entre {ibloc1} et {ibloc2} \n    {bloc1_last_ret} {bloc1_last_tb}\n    {bloc2_first_ret} {bloc2_first_tb}')
-                        #     self.lblocs[ibloc1].print_bloc('  ')
-                        #     self.lblocs[ibloc2].print_bloc('  ')
+                        if self.r0 == f't{itable}-' and self.id==inode and bloc2_first_tb.page_num==page:
+                            print(f'\n  ------------------\n')
+                            print(f'  --> folow entre {ibloc1} et {ibloc2} \n    {bloc1_last_ret} {bloc1_last_tb}\n    {bloc2_first_ret} {bloc2_first_tb}')
+                            self.lblocs[ibloc1].print_bloc('  ')
+                            self.lblocs[ibloc2].print_bloc('  ')
                         
                         if imerge1 is None:
                             imerge1,imerge2 = ibloc1,ibloc2
@@ -379,8 +378,8 @@ class Node():
                             if abs(bloc2_first_tb.y0 - bloc1_last_tb.y0) < abs(tb_merge1.y0 - tb_merge2.y0):
                                 # and \
                                 # len(tb_merge2.text)+2 < len(bloc2_first_tb.text):
-                                # if self.r0 == f't{itable}-' and self.id==inode and bloc2_first_tb.page_num==page:
-                                #     print('  prio sur len()')
+                                if self.r0 == f't{itable}-' and self.id==inode and bloc2_first_tb.page_num==page:
+                                    print('  prio sur len()')
                                 imerge1,imerge2 = ibloc1,ibloc2
                                 ret_merge1,ret_merge2 = ret_prec, ret_next
                                 tb_merge1,tb_merge2 = bloc1_last_tb, bloc2_first_tb
@@ -389,8 +388,8 @@ class Node():
                             # ret_merge2[0].start == ret_next[0].start and \
                             if imerge1 == ibloc1 and \
                                 ret_next[0].dist < ret_merge2[0].dist:
-                                # if self.r0 == f't{itable}-' and self.id==inode and bloc2_first_tb.page_num==page:
-                                #     print('  prio sur dist')
+                                if self.r0 == f't{itable}-' and self.id==inode and bloc2_first_tb.page_num==page:
+                                    print('  prio sur dist')
                                 imerge1,imerge2 = ibloc1,ibloc2
                                 ret_merge1,ret_merge2 = ret_prec, ret_next
                                 tb_merge1,tb_merge2 = bloc1_last_tb, bloc2_first_tb
@@ -405,26 +404,26 @@ class Node():
                             # priorité dans une page
                             if (tb_merge1.page_num != tb_merge2.page_num) and \
                                 (bloc1_last_tb.page_num == bloc2_first_tb.page_num):
-                                # if self.r0 == f't{itable}-' and self.id==inode and bloc2_first_tb.page_num==page:
-                                #     print('  prio sur page')
+                                if self.r0 == f't{itable}-' and self.id==inode and bloc2_first_tb.page_num==page:
+                                    print('  prio sur page')
                                 imerge1,imerge2 = ibloc1,ibloc2
                                 ret_merge1,ret_merge2 = ret_prec, ret_next
                                 tb_merge1,tb_merge2 = bloc1_last_tb, bloc2_first_tb
                         #
-                        # if self.r0 == f't{itable}-' and self.id==inode and bloc2_first_tb.page_num==page:
-                        #     print(f'  <-- prio {imerge1} et {imerge2}')
-                        #     self.lblocs[imerge1].print_bloc('  ')
-                        #     self.lblocs[imerge2].print_bloc('  ')
+                        if self.r0 == f't{itable}-' and self.id==inode and bloc2_first_tb.page_num==page:
+                            print(f'  <-- prio {imerge1} et {imerge2}')
+                            self.lblocs[imerge1].print_bloc('  ')
+                            self.lblocs[imerge2].print_bloc('  ')
                         # taille suffisamment grande len()
                         if len(bloc1.get_first()[0].text) > 20 and len(bloc2_first_tb.text) > 20:
                             imerge1,imerge2 = ibloc1,ibloc2
                             ret_merge1,ret_merge2 = ret_prec, ret_next
                             tb_merge1,tb_merge2 = bloc1_last_tb, bloc2_first_tb
                             ok_m = True
-                            # if self.r0 == f't{itable}-' and self.id==inode and bloc2_first_tb.page_num==page:
-                            #     print(f'  <-- prio len>20 {imerge1} et {imerge2}')
-                            #     self.lblocs[imerge1].print_bloc('  ')
-                            #     self.lblocs[imerge2].print_bloc('  ')
+                            if self.r0 == f't{itable}-' and self.id==inode and bloc2_first_tb.page_num==page:
+                                print(f'  <-- prio len>20 {imerge1} et {imerge2}')
+                                self.lblocs[imerge1].print_bloc('  ')
+                                self.lblocs[imerge2].print_bloc('  ')
                             break
                 if ok_m:
                     break
@@ -434,10 +433,10 @@ class Node():
                 continue
             
             # update ret at merging
-            # if self.r0 == f't{itable}-' and self.id==inode and bloc2_first_tb.page_num==page:
-            #     print(f'\n\nMerge de bloc {imerge1}{self.lblocs[imerge1].merged_ids} et {imerge2}{self.lblocs[imerge2].merged_ids}')
-            #     self.lblocs[imerge1].print_bloc('  ')
-            #     self.lblocs[imerge2].print_bloc('  ')
+            if self.r0 == f't{itable}-' and self.id==inode and bloc2_first_tb.page_num==page:
+                print(f'\n\nMerge de bloc {imerge1}{self.lblocs[imerge1].merged_ids} et {imerge2}{self.lblocs[imerge2].merged_ids}')
+                self.lblocs[imerge1].print_bloc('  ')
+                self.lblocs[imerge2].print_bloc('  ')
             bloc1_copy = self.lblocs[imerge1].copy_bloc()
             tb_1,ret1 = self.lblocs[imerge1].get_last() # last line of prec block
             tb_2,ret2 = self.lblocs[imerge2].get_first()  # first line of next block
@@ -451,19 +450,19 @@ class Node():
             self.lblocs = self.lblocs[:1+imerge1] + [bloc1_copy] + self.lblocs[1+imerge1:] # [avant,imerge1,copy,apres]
             # self.lblocs = self.lblocs[:imerge1] + [bloc1_copy] + self.lblocs[imerge1:] # [avant,imerge1,copy,apres]
 
-            # if self.r0 == f't{itable}-' and self.id==inode and bloc2_first_tb.page_num==page:
-            #     print(f'\nAprès merge de {imerge1} et {imerge2}')
-            #     self.print_node('  ')
-            # if self.r0 == f't{itable}-' and self.id==inode and bloc2_first_tb.page_num==page:
-            #     print(f'\n\ncurseur deb sur {1+imerge1}{self.lblocs[1+imerge1].merged_ids}')
-            #     self.lblocs[imerge1+1].print_bloc('  ')
+            if self.r0 == f't{itable}-' and self.id==inode and bloc2_first_tb.page_num==page:
+                print(f'\nAprès merge de {imerge1} et {imerge2}')
+                self.print_node('  ')
+            if self.r0 == f't{itable}-' and self.id==inode and bloc2_first_tb.page_num==page:
+                print(f'\n\ncurseur deb sur {imerge1}{self.lblocs[imerge1].merged_ids}')
+                self.lblocs[imerge1].print_bloc('  ')
             
-            # # test if node if full, end of node
-            # if self.r0 == f't{itable}-' and self.id==inode and bloc2_first_tb.page_num==page:
-            #     print('Test end')
-            #     print(f'end match {ret3[-1].end} >= len self.text del {len(self.text_del)}')
-            #     print(f'self.text del `{self.text_del}`')
-            #     print(f'self.lblocs[1+imerge1].text del len({len(self.lblocs[1+imerge1].text_del)}) `{self.lblocs[1+imerge1].text}`')
+            # test if node if full, end of node
+            if self.r0 == f't{itable}-' and self.id==inode and bloc2_first_tb.page_num==page:
+                print('Test end')
+                print(f'end match {ret3[-1].end} >= len self.text del {len(self.text_del)}')
+                print(f'self.text del `{self.text_del}`')
+                print(f'self.lblocs[1+imerge1].text del len({len(self.lblocs[1+imerge1].text_del)}) `{self.lblocs[1+imerge1].text}`')
             if ret3[-1].end >= len(self.text_del) and \
                 len(self.lblocs[1+imerge1].text_del) >= len(self.text_del):
                 end = self.lblocs[1+imerge1]
