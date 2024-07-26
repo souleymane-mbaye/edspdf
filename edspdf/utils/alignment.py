@@ -418,7 +418,7 @@ def _align_box_labels_order_ba_pkl_on_page(
     #     # if label_vocab[label_idx] != "__pollution__"
     # ]
     new_dst_boxes = []
-    _sep = '$+$'
+    _sep = '|'
     for i,b in enumerate(dst_boxes):
         src_i = src_indices[i]
         if src_i < len(src_boxes):
