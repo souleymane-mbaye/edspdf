@@ -16,6 +16,9 @@ from edspdf.structures import PDFDoc
 from edspdf.trainable_pipe import TrainablePipe
 
 
+torch.cuda.empty_cache()
+
+
 @registry.factory.register("type-trainable-classifier")
 class TrainableClassifier(TrainablePipe[Dict[str, Any]]):
     """
