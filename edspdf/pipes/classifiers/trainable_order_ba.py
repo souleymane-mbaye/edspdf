@@ -348,32 +348,40 @@ class TrainableClassifier(TrainablePipe[Dict[str, Any]]):
     def forward(self, batch: Dict) -> Dict:
         embedding_res = self.embedding.module_forward(batch["embedding"])
         embeddings = embedding_res["embeddings"]
-        # print(f'\nEMBEDDINGS shape: {embeddings.shape} refold {embeddings.refold("page", "line").shape}')
+        #print(f'\nEMBEDDINGS shape: {embeddings.shape} refold {embeddings.refold("page", "line").shape}')
+        #print("FOLLOWINGS MASK shape", batch["followings_mask"].shape)
+        #print("REGIONS shape", batch["regions"].shape)
         
         # 24 pages * 190 lines * 768
         fc_i = self.fc_i(embeddings.to(self.fc_i.weight.dtype)).refold("page", "line")
         fc_j = self.fc_j(embeddings.to(self.fc_j.weight.dtype)).refold("page", "line")
         mlp  = self.mlp(batch["regions"]).squeeze(-1)
         ## mlp  = mlp.masked_fill(~batch["followings_mask"], 0.0)
-        # print(f'\nFC I shape {fc_i.shape}')
-        # print(f'FC J shape {fc_j.shape}')
-        # print(f'MLP shape {mlp.shape}')
+        #print(f'\nFC I shape {fc_i.shape}')
+        #print(f'FC J shape {fc_j.shape}')
+        #print(f'MLP shape {mlp.shape}')
 
         output = {"loss": 0, "mask": embeddings.mask}
 
         # dot product between lines --> out n_lines * n_lines
         # TODO use einsum instead of matmul
         logits = torch.einsum('pid,pjd->pij', fc_i, fc_j)
-        # print("LOGITS (einsum) shape", logits.shape)
+        #print("LOGITS (einsum) shape", logits.shape)
         
         # SOFTMAX line_i followed by line_j
         # TODO apply mask
-        # print("FOLLOWINGS MASK shape", batch["followings_mask"].shape)
+        #print("FOLLOWINGS MASK shape", batch["followings_mask"].shape)
+        if logits.shape != mlp.shape:
+            print("LOGITS (einsum) shape", logits.shape)
+            print(f'MLP shape {mlp.shape}')
+            logits = logits[:,:mlp.shape[1],:mlp.shape[1]]
+            print("LOGITS (einsum) REshape", logits.shape)
+            print("BATCH ID", batch["doc_id"])
         logits = logits + mlp
         scores = logits.masked_fill(~batch["followings_mask"],  -100000)
         # TODO APPLY softmax if objective is "is line j right after line i (or is line i is line if last) ?"
         scores = scores.softmax(dim=-1)
-        # print("SCORES shape", scores.shape)
+        #print("SCORES shape", scores.shape)
         
         
         # or SIGMOID if objective is "is line j after line i?"
@@ -478,7 +486,7 @@ class TrainableClassifier(TrainablePipe[Dict[str, Any]]):
         with (path / "label_voc.json").open("r") as f:
             self.label_voc.indices = json.load(f)
 
-        self.update_weights_from_vocab_(label_voc_indices)
+        # self.update_weights_from_vocab_(label_voc_indices)
 
         super().from_disk(path, exclude)
 

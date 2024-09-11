@@ -421,9 +421,16 @@ def _align_box_labels_order_ba_pkl_on_page(
     _sep = '|'
     for i,b in enumerate(dst_boxes):
         src_i = src_indices[i]
+        b.aff = 'pol'
         if src_i < len(src_boxes):
             src_b = src_boxes[src_i]
             label = f'{src_b.label}{_sep}{src_b.node_num}{_sep}{src_b.rank}'
+            if src_b.aff:
+                b.aff = src_b.aff
+            if src_b.color:
+                b.color = src_b.color
+            if src_b.bg_color:
+                b.bg_color = src_b.bg_color
             # b.label = src_b.label
             # b.node_num = src_b.node_num
             # b.rank = src_b.rank
